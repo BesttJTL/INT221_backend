@@ -1,6 +1,5 @@
 package sit.int221.sasprojectkk2.services;
 
-import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -119,10 +118,20 @@ public class AnnouncementUserService {
     }
 
 
-    public List<Announcement> getAnnouncementByCategoryNoPageable(int categoryId) {
-        return announcementRepository.findAnnouncementByCategoryIdDf(categoryId);
+    public List<SortByCategoryDTO> getAnnouncementByCategoryNoPageable(int categoryId) {
+        List<Announcement> announcementList = announcementRepository.findAnnouncementByCategoryIdDf(categoryId);
+        List<SortByCategoryDTO> sortByCategoryDTOS = announcementList.stream()
+                .map(announcement -> {
+                    SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
+                    sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+                    return sortByCategoryDTO;
+                })
+                .collect(Collectors.toList());
+        return sortByCategoryDTOS;
     }
 }
+
+// If mapper cannot find .getCategories_categoryId().getCategoryName in Announcement entity, better check your return type of repository's method that return a proper entity (In this context needs to return as Announcement to use .getCategories_categoryId().getCategoryName in mapper). //
 
 // "PageImpl" implements "Page" interface to display paginated list of objects. //
 
