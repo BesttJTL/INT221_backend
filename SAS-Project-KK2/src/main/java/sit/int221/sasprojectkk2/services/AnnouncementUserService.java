@@ -3,12 +3,11 @@ package sit.int221.sasprojectkk2.services;
 import org.apache.catalina.User;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import sit.int221.sasprojectkk2.dtos.SortByCategoryDTO;
 import sit.int221.sasprojectkk2.dtos.UserViewDTO;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
@@ -29,15 +28,9 @@ public class AnnouncementUserService {
     private ModelMapper modelMapper;
 
 
-    public List<Announcement> getAllUserView(){
-       List<Announcement> announcementList = announcementRepository.findAll();
+    public List<Announcement> getAllUserView() {
+        List<Announcement> announcementList = announcementRepository.findAll();
         return announcementList;
-    }
-
-
-    public Page<Announcement> sortByCategory(int categoryName, int size, int page){
-        Pageable pageable = PageRequest.of(page, size);
-        return announcementRepository.findAnnouncementByCategories(categoryName,pageable);
     }
 
     public List<UserViewDTO> returnActiveAnnouncement() {
@@ -57,11 +50,11 @@ public class AnnouncementUserService {
                         return true;
                     }
 
-                    if (publishDate != null &&  closeDate != null && (closeDate.isAfter(currentTime) && publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
+                    if (publishDate != null && closeDate != null && (closeDate.isAfter(currentTime) && publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
                         return true;
                     }
 
-                    if(publishDate == null && closeDate.isAfter(currentTime)){
+                    if (publishDate == null && closeDate.isAfter(currentTime)) {
                         return true;
                     }
 
@@ -73,15 +66,15 @@ public class AnnouncementUserService {
                     return userViewDTO;
                 }).collect(Collectors.toList());
 
-                List<UserViewDTO> result = validDisplay.stream()
-                        .map(announcement -> modelMapper.map(announcement, UserViewDTO.class))
-                        .collect(Collectors.toList());
-                result.sort((a,b) -> b.getAnnouncementId() - a.getAnnouncementId());
-                return result;
+        List<UserViewDTO> result = validDisplay.stream()
+                .map(announcement -> modelMapper.map(announcement, UserViewDTO.class))
+                .collect(Collectors.toList());
+        result.sort((a, b) -> b.getAnnouncementId() - a.getAnnouncementId());
+        return result;
 
     }
 
-    public List<UserViewDTO> returnClosedAnnouncement(){
+    public List<UserViewDTO> returnClosedAnnouncement() {
         List<Announcement> announcementList = announcementRepository.findAll();
         List<UserViewDTO> validDisplay = announcementList.stream()
                 .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
@@ -89,12 +82,12 @@ public class AnnouncementUserService {
                     ZonedDateTime currentTime = ZonedDateTime.now();
                     ZonedDateTime closeDate = announcement.getCloseDate();
 
-                    if(closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))){
+                    if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
                         return true;
                     }
                     return false;
                 }).map(c -> {
-                    UserViewDTO userViewDTO = modelMapper.map(c,UserViewDTO.class);
+                    UserViewDTO userViewDTO = modelMapper.map(c, UserViewDTO.class);
                     userViewDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
                     return userViewDTO;
                 }).collect(Collectors.toList());
@@ -102,7 +95,23 @@ public class AnnouncementUserService {
         List<UserViewDTO> userViewDTOS = validDisplay.stream()
                 .map(ann -> modelMapper.map(ann, UserViewDTO.class))
                 .collect(Collectors.toList());
-                userViewDTOS.sort((a,b) -> b.getAnnouncementId() - a.getAnnouncementId());
+        userViewDTOS.sort((a, b) -> b.getAnnouncementId() - a.getAnnouncementId());
         return userViewDTOS;
     }
+
+    public Page<SortByCategoryDTO> sortByCategory(int categoryId, int size, int page) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Announcement> announcementPage = announcementRepository.findAnnouncementByCategoryId(categoryId, pageable);
+        List<SortByCategoryDTO> sortByCategoryDTOS = announcementPage.getContent().stream()
+                .map(announcement -> {
+                    SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
+                    sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+                    return sortByCategoryDTO;
+                })
+                .collect(Collectors.toList());
+        return new PageImpl<>(sortByCategoryDTOS, pageable, announcementPage.getTotalElements());
+    }
 }
+
+// "PageImpl" implements "Page" interface to display paginated list of objects. //
+// .getContent() method on "Page" is use for fetch the content of page from data source then return as 'List' //

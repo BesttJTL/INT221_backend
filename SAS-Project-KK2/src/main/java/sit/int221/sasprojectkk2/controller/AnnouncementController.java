@@ -2,6 +2,7 @@ package sit.int221.sasprojectkk2.controller;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
@@ -84,21 +85,15 @@ public class AnnouncementController {
          service.deleteAnnouncement(announcementId);
     }
 
-//    @GetMapping("")
-//    public List<UserViewDTO> getAllAnnUserView(@RequestParam String mode) {
-//        if (Objects.equals(mode, "active")) {
-//            List<Announcement> announcementList = userService.getAllUserView();
-//            return announcementList.stream().map(c -> {
-//                UserViewDTO userViewDTO = modelMapper.map(c, UserViewDTO.class);
-//                userViewDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
-//                return userViewDTO;
-//            }).collect(Collectors.toList());
-//        }
-//        if(Objects.equals(mode,"close")){
-//
-//        }
-//
-//        return null;
-//    }
+
+    @GetMapping("/page")
+    public Page<SortByCategoryDTO> getSortAnnouncement(@RequestParam int categoryName,
+                                                       @RequestParam Integer size,
+                                                       @RequestParam Integer page) {
+
+
+        return userService.sortByCategory(categoryName, size, page);
+    }
+
 }
 
