@@ -1,20 +1,16 @@
 package sit.int221.sasprojectkk2.services;
 
-import org.aspectj.weaver.ast.Not;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sasprojectkk2.dtos.PostAnnouncementDTO;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.entities.Category;
 import sit.int221.sasprojectkk2.exceptions.InvalidDateTimeException;
-import sit.int221.sasprojectkk2.exceptions.NoAnnException;
-import sit.int221.sasprojectkk2.exceptions.NotFoundException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.repositories.CategoryRepository;
 
@@ -36,7 +32,7 @@ public class AnnouncementService {
         return list;
     }
 
-    public Announcement createAnnouncement(PostAnnouncementDTO dto) {
+    public Announcement createAnnouncement(PostAnnouncementDTO dto)  {
         ZonedDateTime currentDateTime = ZonedDateTime.now();
         if (dto.getAnnouncementTitle() == null) {
             throw new ResourceNotFoundException("Title Cannot be Null!");
@@ -47,17 +43,12 @@ public class AnnouncementService {
         if(dto.getAnnouncementDescription().length() > 10000){
             throw new RuntimeException("Description is Over-length !");
         }
-        if (dto.getPublishDate() != null) {
-            if (dto.getPublishDate().isBefore(currentDateTime)) {
-                throw new DateTimeException("Publish Date must be greater than or equal current Date/Time !");
-            }
-            if(dto.getCloseDate().isBefore(currentDateTime)){
-                throw new InvalidDateTimeException("Close date must be greater than Current Date/Time !");
-            }
-            if(dto.getCloseDate().isBefore(dto.getPublishDate())){
-                throw new InvalidDateTimeException("Close Date must be greater than Publish Date !");
-            }
-        }
+//        if(dto.getPublishDate().isBefore(currentDateTime)) {
+//            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
+//        }
+//        if(dto.getCloseDate().isBefore(dto.getPublishDate())) {
+//            throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
+//        }
 
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -68,6 +59,7 @@ public class AnnouncementService {
         announcement.setCloseDate(dto.getCloseDate());
         announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         announcement.setCategories_categoryId(category);
+        System.out.println("pDATE: "+dto.getPublishDate());
         return repository.saveAndFlush(announcement);
     }
 

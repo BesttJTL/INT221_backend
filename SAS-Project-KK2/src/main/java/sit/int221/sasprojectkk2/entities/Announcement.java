@@ -26,8 +26,4 @@ public class Announcement {
     @JoinColumn(name = "Categories_categoryId")
     private Category Categories_categoryId;
 
-//    public String getCategories_categoryIdName(String categoryName){
-//        this.announcementCategory = Categories_categoryId.getCategoryName();
-//        return announcementCategory;
-//    }
 }

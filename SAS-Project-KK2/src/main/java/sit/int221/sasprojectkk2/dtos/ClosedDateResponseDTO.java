@@ -2,17 +2,13 @@ package sit.int221.sasprojectkk2.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
+
 import java.time.ZonedDateTime;
 
 @Getter
 @Setter
-public class PostAnnouncementDTO {
+public class ClosedDateResponseDTO {
     private String announcementTitle;
-    private String announcementDescription;
-    private ZonedDateTime publishDate;
+    private String announcementCategory;
     private ZonedDateTime closeDate;
-    private Character announcementDisplay;
-    private Integer categoryId;
 }
-
-

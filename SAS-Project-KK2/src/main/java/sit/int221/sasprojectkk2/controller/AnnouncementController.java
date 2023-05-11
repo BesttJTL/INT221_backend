@@ -2,17 +2,17 @@ package sit.int221.sasprojectkk2.controller;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import sit.int221.sasprojectkk2.dtos.AnnouncementDTO;
-import sit.int221.sasprojectkk2.dtos.AnnouncementDetailsDTO;
-import sit.int221.sasprojectkk2.dtos.PostAnnouncementDTO;
-import sit.int221.sasprojectkk2.dtos.ResponsePostAnnouncementDTO;
+import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
+import sit.int221.sasprojectkk2.services.AnnouncementUserService;
 
+import java.time.ZonedDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @RestController
@@ -22,21 +22,33 @@ public class AnnouncementController {
     @Autowired
     private AnnouncementService service;
     @Autowired
+    private AnnouncementUserService userService;
+    @Autowired
     private ModelMapper modelMapper;
 
     @Autowired
     private AnnouncementRepository repo;
 
-    @GetMapping()
-    public List<AnnouncementDTO> getAll(){
-        List<Announcement> announcementList = service.getAllAnnouncements();
-        return announcementList.stream().map(c -> {
-            AnnouncementDTO announcementDTO = modelMapper.map(c, AnnouncementDTO.class);
-            announcementDTO.setCategoryName(c.getCategories_categoryId().getCategoryName());
-            return announcementDTO;
-        }).collect(Collectors.toList());
+    @GetMapping("")
+    public List<?> getAll(@RequestParam String mode) {
+        if (Objects.equals(mode,"admin")) {
+            List<Announcement> announcementList = service.getAllAnnouncements();
+            return announcementList.stream().map(c -> {
+                AnnouncementDTO announcementDTO = modelMapper.map(c, AnnouncementDTO.class);
+                announcementDTO.setCategoryName(c.getCategories_categoryId().getCategoryName());
+                return announcementDTO;
+            }).collect(Collectors.toList());
+        }
+
+        if(Objects.equals(mode,"active")) {
+            return userService.returnActiveAnnouncement();
+        }
+        if(Objects.equals(mode,"close")){
+            return userService.returnClosedAnnouncement();
+        }
+        return Collections.emptyList();
     }
-    //pass
+    // admin,active mode Passed !
 
     @GetMapping("/{announcementId}")
     public AnnouncementDetailsDTO getAnnouncementById(@PathVariable Integer announcementId){
@@ -50,18 +62,6 @@ public class AnnouncementController {
 
     @PostMapping()
     public ResponsePostAnnouncementDTO createAnnouncement(@RequestBody PostAnnouncementDTO dto) {
-//        if (dto.getAnnouncementTitle() == null || dto.getAnnouncementTitle().length() == 0 || dto.getAnnouncementTitle().isBlank()) {
-//            throw new ResourceNotFoundException("Title Cannot be Null!");
-//        }
-//        if (dto.getAnnouncementDescription() == null || dto.getAnnouncementDescription().length() == 0 || dto.getAnnouncementDescription().isBlank()) {
-//            throw new ResourceNotFoundException("Description Cannot be Null!");
-//        }
-//        if(dto.getCategoryId() == null){
-//            throw new ResourceNotFoundException("Category Cannot be Null !");
-//        }
-//        if(dto.getAnnouncementDescription().length() > 10000){
-//            throw new RuntimeException("Description is Over-length !");
-//        }
         Announcement announcement = service.createAnnouncement(dto);
         ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(dto, ResponsePostAnnouncementDTO.class);
         responsePostAnnouncementDTO.setId(announcement.getId());
@@ -84,4 +84,21 @@ public class AnnouncementController {
          service.deleteAnnouncement(announcementId);
     }
 
+//    @GetMapping("")
+//    public List<UserViewDTO> getAllAnnUserView(@RequestParam String mode) {
+//        if (Objects.equals(mode, "active")) {
+//            List<Announcement> announcementList = userService.getAllUserView();
+//            return announcementList.stream().map(c -> {
+//                UserViewDTO userViewDTO = modelMapper.map(c, UserViewDTO.class);
+//                userViewDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
+//                return userViewDTO;
+//            }).collect(Collectors.toList());
+//        }
+//        if(Objects.equals(mode,"close")){
+//
+//        }
+//
+//        return null;
+//    }
 }
+
