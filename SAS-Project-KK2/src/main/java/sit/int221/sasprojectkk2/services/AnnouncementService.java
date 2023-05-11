@@ -11,9 +11,11 @@ import sit.int221.sasprojectkk2.dtos.PostAnnouncementDTO;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.entities.Category;
 import sit.int221.sasprojectkk2.exceptions.InvalidDateTimeException;
+import sit.int221.sasprojectkk2.exceptions.NotFoundException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.repositories.CategoryRepository;
 
+import java.security.InvalidParameterException;
 import java.time.DateTimeException;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -43,12 +45,12 @@ public class AnnouncementService {
         if(dto.getAnnouncementDescription().length() > 10000){
             throw new RuntimeException("Description is Over-length !");
         }
-//        if(dto.getPublishDate().isBefore(currentDateTime)) {
-//            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
-//        }
-//        if(dto.getCloseDate().isBefore(dto.getPublishDate())) {
-//            throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
-//        }
+        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
+            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
+        }
+        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
+            throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
+        }
 
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -65,7 +67,11 @@ public class AnnouncementService {
 
     public Announcement findAnnouncementById(Integer announcementId){
         return repository.findById(announcementId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                "Announcement id" +  announcementId + "" + "does not exist…"));
+                "Announcement id" +  announcementId + " " + "does not exist"));
+    }
+
+    public Announcement findAnnouncementByIdViewPage(Integer announcementId){
+        return repository.findById(announcementId).orElseThrow(() -> new NotFoundException("The requested page is not available"));
     }
 
     public void deleteAnnouncement(Integer announcementId){

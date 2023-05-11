@@ -3,14 +3,17 @@ package sit.int221.sasprojectkk2.controller;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
+import sit.int221.sasprojectkk2.exceptions.NotFoundException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
 import sit.int221.sasprojectkk2.services.AnnouncementUserService;
 
-import java.time.ZonedDateTime;
+import java.security.InvalidParameterException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -31,7 +34,7 @@ public class AnnouncementController {
     private AnnouncementRepository repo;
 
     @GetMapping("")
-    public List<?> getAll(@RequestParam String mode) {
+    public List<?> getAll(@RequestParam(defaultValue = "admin") String mode) {
         if (Objects.equals(mode,"admin")) {
             List<Announcement> announcementList = service.getAllAnnouncements();
             return announcementList.stream().map(c -> {
@@ -52,14 +55,26 @@ public class AnnouncementController {
     // admin,active mode Passed !
 
     @GetMapping("/{announcementId}")
-    public AnnouncementDetailsDTO getAnnouncementById(@PathVariable Integer announcementId){
-        Announcement announcement = service.findAnnouncementById(announcementId);
-        String categoryName = announcement.getCategories_categoryId().getCategoryName();
-        AnnouncementDetailsDTO announcementDetailsDTO = modelMapper.map(announcement, AnnouncementDetailsDTO.class);
-        announcementDetailsDTO.setCategory(categoryName);
-        return announcementDetailsDTO;
+    public Object getAnnouncementById(@PathVariable Integer announcementId, @RequestParam(defaultValue = "admin") String mode) {
+                if (Objects.equals(mode,"admin")) {
+                    Announcement announcement = service.findAnnouncementById(announcementId);
+                    String categoryName = announcement.getCategories_categoryId().getCategoryName();
+                    AnnouncementDetailsDTO announcementDetailsDTO = modelMapper.map(announcement, AnnouncementDetailsDTO.class);
+                    announcementDetailsDTO.setCategory(categoryName);
+                    return announcementDetailsDTO;
+                } else if (Objects.equals(mode,"active")) {
+                    Announcement announcement = service.findAnnouncementByIdViewPage(announcementId);
+                    ActivePageDetailDTO activePageDetailDTO = modelMapper.map(announcement, ActivePageDetailDTO.class);
+                    activePageDetailDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+                    return activePageDetailDTO;
+                } else if (Objects.equals(mode,"close")) {
+                    Announcement announcement = service.findAnnouncementByIdViewPage(announcementId);
+                    ClosePageDetailDTO closePageDetailDTO = modelMapper.map(announcement, ClosePageDetailDTO.class);
+                    closePageDetailDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+                    return closePageDetailDTO;
+                }
+        return null;
     }
-    //pass
 
     @PostMapping()
     public ResponsePostAnnouncementDTO createAnnouncement(@RequestBody PostAnnouncementDTO dto) {
@@ -87,13 +102,17 @@ public class AnnouncementController {
 
 
     @GetMapping("/page")
-    public Page<SortByCategoryDTO> getSortAnnouncement(@RequestParam int categoryName,
-                                                       @RequestParam Integer size,
-                                                       @RequestParam Integer page) {
+    public Page<?> getSortAnnouncement
+                                         (@RequestParam String mode,
+                                          @RequestParam int category,
+                                          @RequestParam Integer size,
+                                          @RequestParam Integer page) {
 
-
-        return userService.sortByCategory(categoryName, size, page);
+        return userService.sortByCategory(mode,category, size, page);
     }
+
+
+
 
 }
 

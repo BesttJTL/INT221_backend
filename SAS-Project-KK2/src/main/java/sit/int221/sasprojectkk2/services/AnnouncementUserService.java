@@ -15,6 +15,7 @@ import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,7 +82,6 @@ public class AnnouncementUserService {
                 .filter(announcement -> {
                     ZonedDateTime currentTime = ZonedDateTime.now();
                     ZonedDateTime closeDate = announcement.getCloseDate();
-
                     if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
                         return true;
                     }
@@ -99,17 +99,23 @@ public class AnnouncementUserService {
         return userViewDTOS;
     }
 
-    public Page<SortByCategoryDTO> sortByCategory(int categoryId, int size, int page) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-        Page<Announcement> announcementPage = announcementRepository.findAnnouncementByCategoryId(categoryId, pageable);
-        List<SortByCategoryDTO> sortByCategoryDTOS = announcementPage.getContent().stream()
-                .map(announcement -> {
-                    SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
-                    sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
-                    return sortByCategoryDTO;
-                })
-                .collect(Collectors.toList());
-        return new PageImpl<>(sortByCategoryDTOS, pageable, announcementPage.getTotalElements());
+    public Page<?> sortByCategory(String mode,int categoryId, int size, int page) {
+        if (Objects.equals(mode, "active")) {
+            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+            Page<Announcement> announcementPage = announcementRepository.findAnnouncementByCategoryId(categoryId, pageable);
+            System.out.println("Total Element in Category: " + announcementPage.getTotalElements());
+            if(announcementPage.getTotalElements() > 5) {
+                List<SortByCategoryDTO> sortByCategoryDTOS = announcementPage.getContent().stream()
+                        .map(announcement -> {
+                            SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
+                            sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+                            return sortByCategoryDTO;
+                        })
+                        .collect(Collectors.toList());
+                return new PageImpl<>(sortByCategoryDTOS, pageable, announcementPage.getTotalElements());
+            }
+        }
+        return null;
     }
 }
 

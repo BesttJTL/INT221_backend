@@ -18,4 +18,7 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Inte
     @Query(value = "SELECT a FROM Announcement a JOIN FETCH a.Categories_categoryId c WHERE c.categoryId = :categoryId",
             countQuery = "SELECT COUNT(a) FROM Announcement a JOIN a.Categories_categoryId c WHERE c.categoryId = :categoryId")
     Page<Announcement> findAnnouncementByCategoryId(int categoryId, Pageable pageable);
+
+    @Query(value = "SELECT a FROM Announcement a JOIN a.Categories_categoryId c WHERE c.categoryId = :categoryId")
+    List<Announcement> findAnnouncementByCategoryLessThan5(int categoryId);
 }
