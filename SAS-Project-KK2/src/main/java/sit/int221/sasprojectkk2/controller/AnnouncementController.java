@@ -102,12 +102,10 @@ public class AnnouncementController {
 
 
     @GetMapping("/page")
-    public Page<?> getSortAnnouncement
-                                         (@RequestParam String mode,
+    public List<?> getSortAnnouncement(@RequestParam String mode,
                                           @RequestParam int category,
                                           @RequestParam Integer size,
                                           @RequestParam Integer page) {
-
         return userService.sortByCategory(mode,category, size, page);
     }
 

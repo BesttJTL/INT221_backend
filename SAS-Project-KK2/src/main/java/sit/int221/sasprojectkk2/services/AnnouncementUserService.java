@@ -99,12 +99,12 @@ public class AnnouncementUserService {
         return userViewDTOS;
     }
 
-    public Page<?> sortByCategory(String mode,int categoryId, int size, int page) {
+    public List<?> sortByCategory(String mode, int categoryId, int size, int page) {
         if (Objects.equals(mode, "active")) {
             Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
             Page<Announcement> announcementPage = announcementRepository.findAnnouncementByCategoryId(categoryId, pageable);
-            System.out.println("Total Element in Category: " + announcementPage.getTotalElements());
-            if(announcementPage.getTotalElements() > 5) {
+            System.out.println("Total Element in Category" + categoryId + ": " + announcementPage.getTotalElements());
+            if (announcementPage.getTotalElements() > 5) {
                 List<SortByCategoryDTO> sortByCategoryDTOS = announcementPage.getContent().stream()
                         .map(announcement -> {
                             SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
@@ -112,12 +112,22 @@ public class AnnouncementUserService {
                             return sortByCategoryDTO;
                         })
                         .collect(Collectors.toList());
-                return new PageImpl<>(sortByCategoryDTOS, pageable, announcementPage.getTotalElements());
+                return Collections.singletonList(new PageImpl<>(sortByCategoryDTOS, pageable, announcementPage.getTotalElements()));
             }
         }
-        return null;
+        return getAnnouncementByCategoryNoPageable(categoryId);
+    }
+
+
+    public List<Announcement> getAnnouncementByCategoryNoPageable(int categoryId) {
+        return announcementRepository.findAnnouncementByCategoryIdDf(categoryId);
     }
 }
 
 // "PageImpl" implements "Page" interface to display paginated list of objects. //
-// .getContent() method on "Page" is use for fetch the content of page from data source then return as 'List' //
+
+// "List" cannot be converted to "Page" datatype. //
+
+// .getContent() method on "Page" is use for fetch the content of page from data source then return as 'List'. //
+
+// "Collections.singletonList()" is use for wrap an immutable object (In this case is 'Page') so that it can be returned as 'List' type. Using Collections.singletonList() ensures that the returned object is always of type List whether it is 'Page' or 'List'. //
