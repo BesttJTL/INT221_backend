@@ -35,23 +35,22 @@ public class AnnouncementService {
     }
 
     public Announcement createAnnouncement(PostAnnouncementDTO dto)  {
-        ZonedDateTime currentDateTime = ZonedDateTime.now();
-        if (dto.getAnnouncementTitle() == null) {
-            throw new ResourceNotFoundException("Title Cannot be Null!");
-        }
-        if (dto.getAnnouncementDescription() == null) {
-            throw new ResourceNotFoundException("Description Cannot be Null!");
-        }
-        if(dto.getAnnouncementDescription().length() > 10000){
-            throw new RuntimeException("Description is Over-length !");
-        }
-        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
-            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
-        }
+//        ZonedDateTime currentDateTime = ZonedDateTime.now();
+//        if (dto.getAnnouncementTitle() == null) {
+//            throw new ResourceNotFoundException("Title Cannot be Null!");
+//        }
+//        if (dto.getAnnouncementDescription() == null) {
+//            throw new ResourceNotFoundException("Description Cannot be Null!");
+//        }
+//        if(dto.getAnnouncementDescription().length() > 10000){
+//            throw new RuntimeException("Description is Over-length !");
+//        }
+//        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
+//            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
+//        }
         if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
             throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
         }
-
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         Announcement announcement = new Announcement();
@@ -61,7 +60,6 @@ public class AnnouncementService {
         announcement.setCloseDate(dto.getCloseDate());
         announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         announcement.setCategories_categoryId(category);
-        System.out.println("pDATE: "+dto.getPublishDate());
         return repository.saveAndFlush(announcement);
     }
 

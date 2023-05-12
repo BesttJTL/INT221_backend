@@ -98,11 +98,11 @@ public class AnnouncementUserService {
         return userViewDTOS;
     }
 
-    public List<?> sortByCategory(String mode, int categoryId, int size, int page) {
+    public List<?> sortByCategory(String mode, int size, int page) {
         if (Objects.equals(mode, "active")) {
             Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-            Page<Announcement> announcementPage = announcementRepository.findAnnouncementByCategoryId(categoryId, pageable);
-            System.out.println("Total Element in Category" + categoryId + ": " + announcementPage.getTotalElements());
+            Page<Announcement> announcementPage = announcementRepository.findAllAnnouncements(pageable);
+//            System.out.println("Total Element in Category" + categoryId + ": " + announcementPage.getTotalElements());
             if (announcementPage.getTotalElements() > 5) {
                 List<SortByCategoryDTO> sortByCategoryDTOS = announcementPage.getContent().stream()
                         .map(announcement -> {
@@ -114,26 +114,61 @@ public class AnnouncementUserService {
                 return Collections.singletonList(new PageImpl<>(sortByCategoryDTOS, pageable, announcementPage.getTotalElements()));
             }
         }
-        return getAnnouncementByCategoryNoPageable(categoryId);
+
+        if(Objects.equals(mode,"close")){
+            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+            Page<Announcement> announcementPage = announcementRepository.findAllAnnouncements(pageable);
+            List<UserViewDTO> validDisplay = announcementPage.stream()
+                    .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                    .filter(announcement -> {
+                        ZonedDateTime currentTime = ZonedDateTime.now();
+                        ZonedDateTime closeDate = announcement.getCloseDate();
+                        if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
+                            return true;
+                        }
+                        return false;
+                    }).map(c -> {
+                        UserViewDTO userViewDTO = modelMapper.map(c, UserViewDTO.class);
+                        userViewDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
+                        return userViewDTO;
+                    }).collect(Collectors.toList());
+            return Collections.singletonList(new PageImpl<>(validDisplay,pageable, announcementPage.getTotalElements()));
+        }
+        return getAnnouncementByCategoryNoPageable();
     }
 
 
-    public List<SortByCategoryDTO> getAnnouncementByCategoryNoPageable(int categoryId) {
-        List<Announcement> announcementList = announcementRepository.findAnnouncementByCategoryIdDf(categoryId);
-        List<SortByCategoryDTO> sortByCategoryDTOS = announcementList.stream()
+    public List<UserViewDTO> getAnnouncementByCategoryNoPageable() {
+        List<Announcement> announcementList = announcementRepository.findAll();
+        List<UserViewDTO> userViewDTOList = announcementList.stream()
                 .map(announcement -> {
-                    SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
-                    sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
-                    return sortByCategoryDTO;
+                    UserViewDTO userViewDTO = modelMapper.map(announcement, UserViewDTO.class);
+                    userViewDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+                    return userViewDTO;
                 })
                 .collect(Collectors.toList());
+        Collections.reverse(userViewDTOList);
+        return userViewDTOList;
+    }
+
+    public Page<?> sortByCategories(Integer category, int size, int page){
+        Pageable pageable = PageRequest.of(size,page,Sort.by("id").descending());
+        Page<Announcement> sortByCategoryDTOS = announcementRepository.findAnnouncementByCategoryId(category,pageable);
+        sortByCategoryDTOS.stream().map(announcement -> {
+            SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
+            sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+            return sortByCategoryDTO;
+        }).collect(Collectors.toList());
+        Collections.reverse((List<?>) sortByCategoryDTOS);
         return sortByCategoryDTOS;
     }
 }
 
-// If mapper cannot find .getCategories_categoryId().getCategoryName in Announcement entity, better check your return type of repository's method that return a proper entity (In this context needs to return as Announcement to use .getCategories_categoryId().getCategoryName in mapper). //
 
-// "PageImpl" implements "Page" interface to display paginated list of objects. //
+
+// If the mapper cannot find ".getCategories_categoryId().getCategoryName()" in the Announcement entity, better check the return type of the repository's method that returns a proper entity (in this context, it needs to return Announcement to use .getCategories_categoryId().getCategoryName in mapper). //
+
+// "PageImpl<>" implements "Page" interface to display paginated list of objects. //
 
 // "List" cannot be converted to "Page" datatype. //
 

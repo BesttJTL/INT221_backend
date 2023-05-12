@@ -1,19 +1,20 @@
 package sit.int221.sasprojectkk2.controller;
 
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpStatus;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
-import sit.int221.sasprojectkk2.exceptions.NotFoundException;
+import sit.int221.sasprojectkk2.exceptions.InvalidDateTimeException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
 import sit.int221.sasprojectkk2.services.AnnouncementUserService;
 
-import java.security.InvalidParameterException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -77,7 +78,15 @@ public class AnnouncementController {
     }
 
     @PostMapping()
-    public ResponsePostAnnouncementDTO createAnnouncement(@RequestBody PostAnnouncementDTO dto) {
+    public ResponsePostAnnouncementDTO createAnnouncement(@Valid @RequestBody PostAnnouncementDTO dto,BindingResult result) {
+        if(result.hasErrors()){
+            List<ObjectError> errors = result.getAllErrors();
+            List<String> errorMessages = new ArrayList<>();
+            for (ObjectError error : errors) {
+                errorMessages.add(error.getDefaultMessage());
+            }
+            throw new InvalidDateTimeException(errorMessages.toString());
+        }
         Announcement announcement = service.createAnnouncement(dto);
         ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(dto, ResponsePostAnnouncementDTO.class);
         responsePostAnnouncementDTO.setId(announcement.getId());
@@ -101,16 +110,22 @@ public class AnnouncementController {
     }
 
 
-    @GetMapping("/page")
-    public List<?> getSortAnnouncement(@RequestParam String mode,
-                                          @RequestParam int category,
-                                          @RequestParam Integer size,
-                                          @RequestParam Integer page) {
-        return userService.sortByCategory(mode,category, size, page);
+    // URI: /page with pagination (PBI10)
+    @GetMapping("/pages")
+    public List<?> getSortAnnouncement(@RequestParam(defaultValue = "active") String mode,
+                                          @RequestParam(defaultValue = "5") Integer size,
+                                          @RequestParam(defaultValue = "0") Integer page) {
+        return userService.sortByCategory(mode, size, page);
     }
 
 
-
+    // DEMO (NOT IN USE NOW) !!! ยังไม่ใช้ ///
+    @GetMapping("/paagee")
+    public Page<?> getSortByCategory(@RequestParam int category ,
+                                     @RequestParam int size,
+                                     @RequestParam int page){
+        return userService.sortByCategories(category,size,page);
+    }
 
 }
 

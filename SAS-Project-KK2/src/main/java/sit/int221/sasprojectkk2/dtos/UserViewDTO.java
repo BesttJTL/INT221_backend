@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.minidev.json.annotate.JsonIgnore;
 
+import java.time.ZonedDateTime;
+
 @Getter
 @Setter
 public class UserViewDTO {
@@ -11,4 +13,5 @@ public class UserViewDTO {
     private Integer announcementId;
     private String announcementTitle;
     private String announcementCategory;
+    private ZonedDateTime closeDate;
 }

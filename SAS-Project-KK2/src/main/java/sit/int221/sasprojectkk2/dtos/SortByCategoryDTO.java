@@ -11,9 +11,9 @@ import java.time.ZonedDateTime;
 public class SortByCategoryDTO {
     private Integer id;
     private String announcementTitle;
-    private ZonedDateTime publishDate;
-    private ZonedDateTime closeDate;
-    private Character announcementDisplay;
+//    private ZonedDateTime publishDate;
+//    private ZonedDateTime closeDate;
+//    private Character announcementDisplay;
     private String announcementCategory;
 
 }
