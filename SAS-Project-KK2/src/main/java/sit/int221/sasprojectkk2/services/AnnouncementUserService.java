@@ -106,12 +106,35 @@ public class AnnouncementUserService {
 //            System.out.println("Total Element in Category" + categoryId + ": " + announcementPage.getTotalElements());
             if (announcementPage.getTotalElements() > 5) {
                 List<SortByCategoryDTO> sortByCategoryDTOS = announcementPage.getContent().stream()
-                        .map(announcement -> {
-                            SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
-                            sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
-                            return sortByCategoryDTO;
+                        .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                        .filter(announcement -> {
+                            ZonedDateTime currentTime = ZonedDateTime.now();
+                            ZonedDateTime publishDate = announcement.getPublishDate();
+                            ZonedDateTime closeDate = announcement.getCloseDate();
+
+                            if (publishDate == null && closeDate == null) {
+                                return true;
+                            }
+
+                            if (publishDate != null && closeDate == null && (publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
+                                return true;
+                            }
+
+                            if (publishDate != null && closeDate != null && (closeDate.isAfter(currentTime) && publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
+                                return true;
+                            }
+
+                            if (publishDate == null && closeDate.isAfter(currentTime)) {
+                                return true;
+                            }
+
+                            return false;
                         })
-                        .collect(Collectors.toList());
+                        .map(c -> {
+                            SortByCategoryDTO userViewDTO = modelMapper.map(c, SortByCategoryDTO.class);
+                            userViewDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
+                            return userViewDTO;
+                        }).collect(Collectors.toList());
                 return Collections.singletonList(new PageImpl<>(sortByCategoryDTOS, pageable, announcementPage.getTotalElements()));
             }
         }
