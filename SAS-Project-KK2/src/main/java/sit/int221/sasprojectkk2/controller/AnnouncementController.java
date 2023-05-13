@@ -121,12 +121,12 @@ public class AnnouncementController {
 
 
     // DEMO (NOT IN USE NOW) !!! ยังไม่ใช้ ///
-    @GetMapping("/paagee")
-    public Page<?> getSortByCategory(@RequestParam int category ,
-                                     @RequestParam int size,
-                                     @RequestParam int page){
-        return userService.sortByCategories(category,size,page);
-    }
+//    @GetMapping("/paagee")
+//    public Page<?> getSortByCategory(@RequestParam int category ,
+//                                     @RequestParam int size,
+//                                     @RequestParam int page){
+//        return userService.sortByCategories(category,size,page);
+//    }
 
 }
 

@@ -98,68 +98,103 @@ public class AnnouncementUserService {
         return userViewDTOS;
     }
 
+    public Page<SortByCategoryDTO> closeMethod(int page,int size){
+        List<Announcement> findALl = announcementRepository.findAll();
+        Pageable pageable = PageRequest.of(page, size);
+        ZonedDateTime currentTime = ZonedDateTime.now();
+        List<SortByCategoryDTO> filteredClose = new java.util.ArrayList<>(findALl.stream()
+                .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                .filter(announcement -> {
+                    ZonedDateTime closeDate = announcement.getCloseDate();
+                    if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
+                        return true;
+                    }
+                    return false;
+                }).map(c -> {
+                    SortByCategoryDTO activeDTO = modelMapper.map(c, SortByCategoryDTO.class);
+                    activeDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
+                    return activeDTO;
+                }).toList());
+        Collections.reverse(filteredClose);
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filteredClose.size());
+        int total = filteredClose.size();
+        if (start >= total) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+        List<SortByCategoryDTO> pageContent = filteredClose.subList(start, end);
+        Page<SortByCategoryDTO> pageableClose = new PageImpl<>(pageContent, pageable, total);
+        return pageableClose;
+    }
+
+    public Page<SortByCategoryDTO> activeMethod(int page, int size) {
+        List<Announcement> findALl = announcementRepository.findAll();
+        Pageable pageable = PageRequest.of(page, size);
+        ZonedDateTime currentTime = ZonedDateTime.now();
+        List<SortByCategoryDTO> filteredActive = new java.util.ArrayList<>(findALl.stream()
+                .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                .filter(announcement -> {
+                    ZonedDateTime publishDate = announcement.getPublishDate();
+                    ZonedDateTime closeDate = announcement.getCloseDate();
+                    if (publishDate == null && closeDate == null) {
+                        return true;
+                    }
+
+                    if (publishDate != null && closeDate == null && (publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
+                        return true;
+                    }
+
+                    if (publishDate != null && closeDate != null && (closeDate.isAfter(currentTime) && publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
+                        return true;
+                    }
+
+                    if (publishDate == null && closeDate.isAfter(currentTime)) {
+                        return true;
+                    }
+
+                    return false;
+                }).map(c -> {
+                    SortByCategoryDTO activeDTO = modelMapper.map(c, SortByCategoryDTO.class);
+                    activeDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
+                    return activeDTO;
+                }).toList());
+        Collections.reverse(filteredActive);
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), filteredActive.size());
+        int total = filteredActive.size();
+        if (start >= total) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+        List<SortByCategoryDTO> pageContent = filteredActive.subList(start, end);
+        Page<SortByCategoryDTO> pageable1 = new PageImpl<>(pageContent, pageable, total);
+        return pageable1;
+    }
+
+
+
     public List<?> userViewPage(String mode, int size, int page) {
         if (Objects.equals(mode, "active")) {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-            Page<Announcement> announcementPage = announcementRepository.findAllAnnouncements(pageable);
-            System.out.println(announcementPage.getContent().get(0).getAnnouncementTitle());
-//            System.out.println("Total Element in Category" + categoryId + ": " + announcementPage.getTotalElements());
-            if (announcementPage.getTotalElements() > 5) {
-                List<SortByCategoryDTO> sortByCategoryDTOS = announcementPage.getContent().stream()
-                        .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
-                        .filter(announcement -> {
-                            ZonedDateTime currentTime = ZonedDateTime.now();
-                            ZonedDateTime publishDate = announcement.getPublishDate();
-                            ZonedDateTime closeDate = announcement.getCloseDate();
-
-                            if (publishDate == null && closeDate == null) {
-                                return true;
-                            }
-
-                            if (publishDate != null && closeDate == null && (publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
-                                return true;
-                            }
-
-                            if (publishDate != null && closeDate != null && (closeDate.isAfter(currentTime) && publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
-                                return true;
-                            }
-
-                            if (publishDate == null && closeDate.isAfter(currentTime)) {
-                                return true;
-                            }
-
-                            return false;
-                        })
-                        .map(c -> {
-                            SortByCategoryDTO userViewDTO = modelMapper.map(c, SortByCategoryDTO.class);
-                            userViewDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
-                            return userViewDTO;
-                        }).collect(Collectors.toList());
-                return Collections.singletonList(new PageImpl<>(sortByCategoryDTOS, pageable, announcementPage.getTotalElements()));
+            Page<SortByCategoryDTO> pageAnnouncement = activeMethod(page, size);
+            if (pageAnnouncement.getTotalElements() >= 5) {
+                return Collections.singletonList(pageAnnouncement);
+            } else {
+                return pageAnnouncement.getContent();
             }
         }
-
         if(Objects.equals(mode,"close")){
-            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-            Page<Announcement> announcementPage = announcementRepository.findAllAnnouncements(pageable);
-            List<UserViewDTO> validDisplay = announcementPage.stream()
-                    .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
-                    .filter(announcement -> {
-                        ZonedDateTime currentTime = ZonedDateTime.now();
-                        ZonedDateTime closeDate = announcement.getCloseDate();
-                        if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
-                            return true;
-                        }
-                        return false;
-                    }).map(c -> {
-                        UserViewDTO userViewDTO = modelMapper.map(c, UserViewDTO.class);
-                        userViewDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
-                        return userViewDTO;
-                    }).collect(Collectors.toList());
-            return Collections.singletonList(new PageImpl<>(validDisplay,pageable, announcementPage.getTotalElements()));
+            Page<SortByCategoryDTO> pageAnnouncementClose = closeMethod(page, size);
+            if(pageAnnouncementClose.getTotalElements() >= 5){
+                return Collections.singletonList(pageAnnouncementClose);
+            }else{
+                return pageAnnouncementClose.getContent();
+            }
         }
-        return getAnnouncementNoPageable();
+        // No matched cases of mode --> Return admin mode
+        else{
+            return getAnnouncementNoPageable();
+        }
     }
+
 
 
     public List<UserViewDTO> getAnnouncementNoPageable() {
