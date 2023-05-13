@@ -18,7 +18,7 @@ public class PostAnnouncementDTO {
     @Size(min=1, max=10000, message = "size must be between 1 and 10000 ")
     @NotBlank(message = "Announcement Description cannot be null !")
     private String announcementDescription;
-    @ValidPublishDate
+//    @ValidPublishDate
     private ZonedDateTime publishDate;
     private ZonedDateTime closeDate;
     private Character announcementDisplay;

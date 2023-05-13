@@ -38,6 +38,7 @@ public class AnnouncementController {
     public List<?> getAll(@RequestParam(defaultValue = "admin") String mode) {
         if (Objects.equals(mode,"admin")) {
             List<Announcement> announcementList = service.getAllAnnouncements();
+            System.out.println("Ann length: "+announcementList.size());
             return announcementList.stream().map(c -> {
                 AnnouncementDTO announcementDTO = modelMapper.map(c, AnnouncementDTO.class);
                 announcementDTO.setCategoryName(c.getCategories_categoryId().getCategoryName());
@@ -115,7 +116,7 @@ public class AnnouncementController {
     public List<?> getSortAnnouncement(@RequestParam(defaultValue = "active") String mode,
                                           @RequestParam(defaultValue = "5") Integer size,
                                           @RequestParam(defaultValue = "0") Integer page) {
-        return userService.sortByCategory(mode, size, page);
+        return userService.userViewPage(mode, size, page);
     }
 
 

@@ -98,10 +98,11 @@ public class AnnouncementUserService {
         return userViewDTOS;
     }
 
-    public List<?> sortByCategory(String mode, int size, int page) {
+    public List<?> userViewPage(String mode, int size, int page) {
         if (Objects.equals(mode, "active")) {
             Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
             Page<Announcement> announcementPage = announcementRepository.findAllAnnouncements(pageable);
+            System.out.println(announcementPage.getContent().get(0).getAnnouncementTitle());
 //            System.out.println("Total Element in Category" + categoryId + ": " + announcementPage.getTotalElements());
             if (announcementPage.getTotalElements() > 5) {
                 List<SortByCategoryDTO> sortByCategoryDTOS = announcementPage.getContent().stream()
@@ -134,11 +135,11 @@ public class AnnouncementUserService {
                     }).collect(Collectors.toList());
             return Collections.singletonList(new PageImpl<>(validDisplay,pageable, announcementPage.getTotalElements()));
         }
-        return getAnnouncementByCategoryNoPageable();
+        return getAnnouncementNoPageable();
     }
 
 
-    public List<UserViewDTO> getAnnouncementByCategoryNoPageable() {
+    public List<UserViewDTO> getAnnouncementNoPageable() {
         List<Announcement> announcementList = announcementRepository.findAll();
         List<UserViewDTO> userViewDTOList = announcementList.stream()
                 .map(announcement -> {

@@ -48,9 +48,9 @@ public class AnnouncementService {
 //        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
 //            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
 //        }
-        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
-            throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
-        }
+//        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
+//            throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
+//        }
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         Announcement announcement = new Announcement();
