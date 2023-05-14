@@ -35,24 +35,27 @@ public class AnnouncementService {
     }
 
     public Announcement createAnnouncement(PostAnnouncementDTO dto)  {
-//        ZonedDateTime currentDateTime = ZonedDateTime.now();
-//        if (dto.getAnnouncementTitle() == null) {
-//            throw new ResourceNotFoundException("Title Cannot be Null!");
-//        }
-//        if (dto.getAnnouncementDescription() == null) {
-//            throw new ResourceNotFoundException("Description Cannot be Null!");
-//        }
-//        if(dto.getAnnouncementDescription().length() > 10000){
-//            throw new RuntimeException("Description is Over-length !");
-//        }
-//        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
-//            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
-//        }
-//        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
-//            throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
-//        }
+        ZonedDateTime currentDateTime = ZonedDateTime.now();
+        if (dto.getAnnouncementTitle() == null) {
+            throw new ResourceNotFoundException("must not be null");
+        }
+        if (dto.getAnnouncementDescription() == null) {
+            throw new ResourceNotFoundException("must not be blank");
+        }
+        if(dto.getAnnouncementDescription().length() > 10000){
+            throw new RuntimeException("Description is Over-length !");
+        }
+        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
+            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
+        }
+        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
+            throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
+        }
+        if(dto.getCloseDate().isBefore(currentDateTime)){
+            throw new InvalidDateTimeException("must be a future date");
+        }
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("must not be null"));
         Announcement announcement = new Announcement();
         announcement.setAnnouncementTitle(dto.getAnnouncementTitle());
         announcement.setAnnouncementDescription(dto.getAnnouncementDescription());

@@ -6,6 +6,7 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import sit.int221.sasprojectkk2.dtos.ClosePageDetailDTO;
 import sit.int221.sasprojectkk2.dtos.SortByCategoryDTO;
 import sit.int221.sasprojectkk2.dtos.UserViewDTO;
 import sit.int221.sasprojectkk2.entities.Announcement;
@@ -98,11 +99,11 @@ public class AnnouncementUserService {
         return userViewDTOS;
     }
 
-    public Page<SortByCategoryDTO> closeMethod(int page,int size){
+    public Page<ClosePageDetailDTO> closeMethod(int page, int size){
         List<Announcement> findALl = announcementRepository.findAll();
         Pageable pageable = PageRequest.of(page, size);
         ZonedDateTime currentTime = ZonedDateTime.now();
-        List<SortByCategoryDTO> filteredClose = new java.util.ArrayList<>(findALl.stream()
+        List<ClosePageDetailDTO> filteredClose = new java.util.ArrayList<>(findALl.stream()
                 .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
                 .filter(announcement -> {
                     ZonedDateTime closeDate = announcement.getCloseDate();
@@ -111,7 +112,7 @@ public class AnnouncementUserService {
                     }
                     return false;
                 }).map(c -> {
-                    SortByCategoryDTO activeDTO = modelMapper.map(c, SortByCategoryDTO.class);
+                    ClosePageDetailDTO activeDTO = modelMapper.map(c, ClosePageDetailDTO.class);
                     activeDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
                     return activeDTO;
                 }).toList());
@@ -122,8 +123,8 @@ public class AnnouncementUserService {
         if (start >= total) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
-        List<SortByCategoryDTO> pageContent = filteredClose.subList(start, end);
-        Page<SortByCategoryDTO> pageableClose = new PageImpl<>(pageContent, pageable, total);
+        List<ClosePageDetailDTO> pageContent = filteredClose.subList(start, end);
+        Page<ClosePageDetailDTO> pageableClose = new PageImpl<>(pageContent, pageable, total);
         return pageableClose;
     }
 
@@ -182,7 +183,7 @@ public class AnnouncementUserService {
             }
         }
         if(Objects.equals(mode,"close")){
-            Page<SortByCategoryDTO> pageAnnouncementClose = closeMethod(page, size);
+            Page<ClosePageDetailDTO> pageAnnouncementClose = closeMethod(page, size);
             if(pageAnnouncementClose.getTotalElements() >= 5){
                 return Collections.singletonList(pageAnnouncementClose);
             }else{
