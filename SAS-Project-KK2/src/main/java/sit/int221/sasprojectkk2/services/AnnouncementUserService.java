@@ -176,25 +176,26 @@ public class AnnouncementUserService {
     public List<?> userViewPage(String mode, int size, int page) {
         if (Objects.equals(mode, "active")) {
             Page<SortByCategoryDTO> pageAnnouncement = activeMethod(page, size);
-            if (pageAnnouncement.getTotalElements() >= 5) {
+//            if (pageAnnouncement.getTotalElements() >= 5) {
                 return Collections.singletonList(pageAnnouncement);
-            } else {
-                return pageAnnouncement.getContent();
-            }
+//            } else {
+//                return pageAnnouncement.getContent();
+//            }
         }
         if(Objects.equals(mode,"close")){
             Page<ClosePageDetailDTO> pageAnnouncementClose = closeMethod(page, size);
-            if(pageAnnouncementClose.getTotalElements() >= 5){
+//            if(pageAnnouncementClose.getTotalElements() >= 5){
                 return Collections.singletonList(pageAnnouncementClose);
-            }else{
-                return pageAnnouncementClose.getContent();
+//            }else{
+//                return pageAnnouncementClose.getContent();
             }
-        }
-        // No matched cases of mode --> Return admin mode
-        else{
-            return getAnnouncementNoPageable();
-        }
+        return null;
     }
+        // No matched cases of mode --> Return admin mode
+//        else{
+//            return getAnnouncementNoPageable();
+
+
 
 
 
