@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 @Getter
 @Setter
 public class ClosePageDetailDTO {
-    private Integer announcementId;
+    private Integer id;
     private String announcementTitle;
     private String announcementDescription;
     private String announcementCategory;
