@@ -125,13 +125,5 @@ public class AnnouncementController {
         return listMapper.toPageDTO(x,AnnouncementDTO.class,modelMapper);
     }
 
-//    @GetMapping("/test")
-//    public Page<?> test(@RequestParam int size, @RequestParam int page){
-//        return userService.getAllUserViewPageable(size,page);
-//    }
-
-
-
-
 }
 

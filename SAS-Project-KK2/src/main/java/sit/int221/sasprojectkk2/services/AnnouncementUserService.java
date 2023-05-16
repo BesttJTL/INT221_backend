@@ -188,7 +188,7 @@ public class AnnouncementUserService {
                 Page<AnnouncementDTO> pageAnnouncement = activeMethod(page, size);
                 return (pageAnnouncement);
             }else{
-                return (sortByCategories(category, size, page));
+                return sortByCategories(category, size, page,mode);
             }
         }
         if(Objects.equals(mode,"close")){
@@ -196,7 +196,7 @@ public class AnnouncementUserService {
                 Page<AnnouncementDTO> pageAnnouncementClose = closeMethod(page, size);
                 return (pageAnnouncementClose);
             }else{
-                return (sortByCategories(category, size, page));
+                return sortByCategories(category, size, page,mode);
             }
         }
         return (getAllUserViewPageable(page, size));
@@ -215,20 +215,67 @@ public class AnnouncementUserService {
         return userViewDTOList;
     }
 
-    public Page<?> sortByCategories(Integer category, int size, int page){
-        Pageable pageable = PageRequest.of(page, size,Sort.by("id").descending());
-        Page<Announcement> announcementList = announcementRepository.findAnnouncementByCategoryId(category, pageable);
-        System.out.println("Category " + category + " Amount = " + announcementList.getTotalElements());
-        List<AnnouncementDTO> sortByCategoryDTOList = announcementList.stream().map(announcement -> {
-            AnnouncementDTO sortByCategoryDTO = modelMapper.map(announcement, AnnouncementDTO.class);
-            sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
-            return sortByCategoryDTO;
-        }).collect(Collectors.toList());
-        return new PageImpl<>(sortByCategoryDTOList, pageable, announcementList.getTotalElements());
+    public Page<?> sortByCategories(Integer category, int size, int page,String mode) {
+        {
+            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+            Page<Announcement> announcementList = announcementRepository.findAnnouncementByCategoryId(category, pageable);
+            List<AnnouncementDTO> sortByCategoryDTOList = announcementList.stream().map(announcement -> {
+                AnnouncementDTO sortByCategoryDTO = modelMapper.map(announcement, AnnouncementDTO.class);
+                sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+                return sortByCategoryDTO;
+            }).collect(Collectors.toList());
+            if (Objects.equals(mode, "active")) {
+                sortByCategoryDTOList.stream()
+                        .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                        .filter(announcement -> {
+                            ZonedDateTime publishDate = announcement.getPublishDate();
+                            ZonedDateTime closeDate = announcement.getCloseDate();
+                            ZonedDateTime currentTime = ZonedDateTime.now();
+                            if (publishDate == null && closeDate == null) {
+                                return true;
+                            }
 
+                            if (publishDate != null && closeDate == null && (publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
+                                return true;
+                            }
+
+                            if (publishDate != null && closeDate != null && (closeDate.isAfter(currentTime) && publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
+                                return true;
+                            }
+
+                            if (publishDate == null && closeDate.isAfter(currentTime)) {
+                                return true;
+                            }
+                            return false;
+                        }).map(c -> {
+                            AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
+                            return activeDTO;
+                        }).toList();
+
+                if (Objects.equals(mode, "close")) {
+                    sortByCategoryDTOList.stream()
+                            .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                            .filter(announcement -> {
+                                ZonedDateTime closeDate = announcement.getCloseDate();
+                                ZonedDateTime currentTime = ZonedDateTime.now();
+                                if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
+                                    return true;
+                                }
+                                return false;
+                            }).map(c -> {
+                                AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
+                                return activeDTO;
+                            }).toList();
+                }
+                return new PageImpl<>(sortByCategoryDTOList, pageable, announcementList.getTotalElements());
+
+            }
+
+        }
+        return null;
     }
-
 }
+
 
 
 
