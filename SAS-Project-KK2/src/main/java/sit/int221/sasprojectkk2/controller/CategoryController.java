@@ -15,14 +15,6 @@ import java.util.List;
 @RequestMapping("api/category")
 @CrossOrigin
 public class CategoryController {
-    @Autowired
-    private CategoryService service;
-
-    @Autowired
-    private ModelMapper modelMapper;
-
-    @Autowired
-    private AnnouncementUserService userService;
 
     @Autowired
     private CategoryRepository repo;

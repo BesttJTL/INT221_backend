@@ -45,15 +45,15 @@ public class AnnouncementService {
         if(dto.getAnnouncementDescription().length() > 10000){
             throw new RuntimeException("Description is Over-length !");
         }
-//        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
-//            throw new InvalidDateTimeException("Publish Date must be greater than current date !");
-//        }
-//        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
-//            throw new InvalidDateTimeException("Close Date must be greater than Publish date !");
-//        }
-//        if(dto.getCloseDate().isBefore(currentDateTime)){
-//            throw new InvalidDateTimeException("must be a future date");
-//        }
+        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
+            throw new InvalidDateTimeException("must be a date in the present or in the future");
+        }
+        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
+            throw new InvalidDateTimeException("must be later than publish date");
+        }
+        if(dto.getCloseDate().isBefore(currentDateTime)){
+            throw new InvalidDateTimeException("must be a future date");
+        }
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("must not be null"));
         Announcement announcement = new Announcement();

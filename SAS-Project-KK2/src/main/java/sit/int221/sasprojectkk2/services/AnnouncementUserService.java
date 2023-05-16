@@ -107,11 +107,11 @@ public class AnnouncementUserService {
         return userViewDTOS;
     }
 
-    public Page<AnnouncementDTO> closeMethod(int page, int size){
-        List<Announcement> findALl = announcementRepository.findAll();
-        Pageable pageable = PageRequest.of(page, size);
+    public Page<AnnouncementDTO> closeMethod(int page, int size, Integer category) {
+        List<Announcement> findAll = announcementRepository.findAll();
         ZonedDateTime currentTime = ZonedDateTime.now();
-        List<AnnouncementDTO> filteredClose = new java.util.ArrayList<>(findALl.stream()
+
+        List<AnnouncementDTO> filteredClose = findAll.stream()
                 .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
                 .filter(announcement -> {
                     ZonedDateTime closeDate = announcement.getCloseDate();
@@ -119,22 +119,29 @@ public class AnnouncementUserService {
                         return true;
                     }
                     return false;
-                }).map(c -> {
+                })
+                .filter(announcement -> category == null || Objects.equals(announcement.getCategories_categoryId().getCategoryId(),category))
+                .map(c -> {
                     AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
                     activeDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
                     return activeDTO;
-                }).toList());
+                })
+                .collect(Collectors.toList());
+
         Collections.reverse(filteredClose);
-        int start = (int) pageable.getOffset();
-        int end = Math.min(start + pageable.getPageSize(), filteredClose.size());
+
+        int start = page * size;
+        int end = Math.min(start + size, filteredClose.size());
         int total = filteredClose.size();
+
         if (start >= total) {
-            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+            return new PageImpl<>(Collections.emptyList());
         }
+
         List<AnnouncementDTO> pageContent = filteredClose.subList(start, end);
-        Page<AnnouncementDTO> pageableClose = new PageImpl<>(pageContent, pageable, total);
-        return pageableClose;
+        return new PageImpl<>(pageContent, PageRequest.of(page, size), total);
     }
+
 
     public Page<AnnouncementDTO> activeMethod(int page, int size) {
         List<Announcement> findALl = announcementRepository.findAll();
@@ -183,7 +190,7 @@ public class AnnouncementUserService {
 
     public Page<?> userViewPage(String mode, int size, Integer category, int page) {
          if (Objects.equals(mode, "active")) {
-//            System.out.println("Input Category Number: " + category);
+            System.out.println("Input Category Number: " + category);
             if(category == null){
                 Page<AnnouncementDTO> pageAnnouncement = activeMethod(page, size);
                 return (pageAnnouncement);
@@ -193,11 +200,10 @@ public class AnnouncementUserService {
         }
         if(Objects.equals(mode,"close")){
             if(category == null){
-                Page<AnnouncementDTO> pageAnnouncementClose = closeMethod(page, size);
+                Page<AnnouncementDTO> pageAnnouncementClose = closeMethod(page, size,category);
                 return (pageAnnouncementClose);
-            }else{
-                return sortByCategories(category, size, page,mode);
             }
+            return sortByCategories(category, size, page, mode);
         }
         return (getAllUserViewPageable(page, size));
     }
@@ -215,67 +221,39 @@ public class AnnouncementUserService {
         return userViewDTOList;
     }
 
-    public Page<?> sortByCategories(Integer category, int size, int page,String mode) {
-        {
-            Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
-            Page<Announcement> announcementList = announcementRepository.findAnnouncementByCategoryId(category, pageable);
-            List<AnnouncementDTO> sortByCategoryDTOList = announcementList.stream().map(announcement -> {
-                AnnouncementDTO sortByCategoryDTO = modelMapper.map(announcement, AnnouncementDTO.class);
-                sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
-                return sortByCategoryDTO;
-            }).collect(Collectors.toList());
-            if (Objects.equals(mode, "active")) {
-                sortByCategoryDTOList.stream()
-                        .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
-                        .filter(announcement -> {
-                            ZonedDateTime publishDate = announcement.getPublishDate();
-                            ZonedDateTime closeDate = announcement.getCloseDate();
-                            ZonedDateTime currentTime = ZonedDateTime.now();
-                            if (publishDate == null && closeDate == null) {
-                                return true;
-                            }
+    public Page<?> sortByCategories(Integer category, int size, int page,String mode)
+    {
+        ZonedDateTime currentTime = ZonedDateTime.now();
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").descending());
+        Page<Announcement> announcementList = announcementRepository.findAnnouncementByCategoryId(category, pageable);
+        List<AnnouncementDTO> sortByCategoryDTOList = announcementList.stream().map(announcement -> {
+            AnnouncementDTO sortByCategoryDTO = modelMapper.map(announcement, AnnouncementDTO.class);
+            sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
+            return sortByCategoryDTO;
+        }).collect(Collectors.toList());
 
-                            if (publishDate != null && closeDate == null && (publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
-                                return true;
-                            }
-
-                            if (publishDate != null && closeDate != null && (closeDate.isAfter(currentTime) && publishDate.isBefore(currentTime) || publishDate.isEqual(currentTime))) {
-                                return true;
-                            }
-
-                            if (publishDate == null && closeDate.isAfter(currentTime)) {
-                                return true;
-                            }
-                            return false;
-                        }).map(c -> {
-                            AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
-                            return activeDTO;
-                        }).toList();
-
-                if (Objects.equals(mode, "close")) {
-                    sortByCategoryDTOList.stream()
-                            .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
-                            .filter(announcement -> {
-                                ZonedDateTime closeDate = announcement.getCloseDate();
-                                ZonedDateTime currentTime = ZonedDateTime.now();
-                                if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
-                                    return true;
-                                }
-                                return false;
-                            }).map(c -> {
-                                AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
-                                return activeDTO;
-                            }).toList();
-                }
-                return new PageImpl<>(sortByCategoryDTOList, pageable, announcementList.getTotalElements());
-
-            }
-
+        if (Objects.equals(mode, "active")) {
+            activeMethod(page, size);
         }
-        return null;
+        if (Objects.equals(mode, "close")) {
+            List<AnnouncementDTO> allCloseFiltered = closeMethod(page, size,category).getContent();
+            allCloseFiltered.stream()
+                    .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                    .filter(announcement -> {
+                        ZonedDateTime closeDate = announcement.getCloseDate();
+                        if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
+                            return true;
+                        }
+                        return false;
+                    }).map(c -> {
+                        AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
+                        return activeDTO;
+                    }).toList();
+            return new PageImpl<>(allCloseFiltered, pageable, allCloseFiltered.size());
+        }
+        return new PageImpl<>(sortByCategoryDTOList, pageable, announcementList.getTotalElements());
     }
 }
-
 
 
 
