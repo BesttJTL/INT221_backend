@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PageDTO<T> {
+public class PageDto<T> {
     private List<T> content;
     private Boolean last;
     private Boolean first;
@@ -21,6 +21,7 @@ public class PageDTO<T> {
     private Integer size;
     @JsonIgnore
     private Integer number;
+
     public Integer getPage() {
         return number;
     }

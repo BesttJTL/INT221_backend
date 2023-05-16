@@ -13,12 +13,15 @@ import sit.int221.sasprojectkk2.exceptions.InvalidDateTimeException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
 import sit.int221.sasprojectkk2.services.AnnouncementUserService;
+import sit.int221.sasprojectkk2.utils.ListMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+
 
 @RestController
 @RequestMapping("/api/announcements")
@@ -30,7 +33,8 @@ public class AnnouncementController {
     private AnnouncementUserService userService;
     @Autowired
     private ModelMapper modelMapper;
-
+    @Autowired
+    private ListMapper listMapper;
     @Autowired
     private AnnouncementRepository repo;
 
@@ -113,11 +117,19 @@ public class AnnouncementController {
 
     // URI: /page with pagination (PBI10)
     @GetMapping("/pages")
-    public List<?> getSortAnnouncement(@RequestParam(defaultValue = "active") String mode,
+    public PageDto<AnnouncementDTO> getSortAnnouncement(@RequestParam(defaultValue = "active") String mode,
                                           @RequestParam(defaultValue = "5") Integer size,
+                                          @RequestParam(required = false) Integer category,
                                           @RequestParam(defaultValue = "0") Integer page) {
-        return userService.userViewPage(mode, size, page);
+        Page<?> x = userService.userViewPage(mode, size,category, page);
+        return listMapper.toPageDTO(x,AnnouncementDTO.class,modelMapper);
     }
+
+//    @GetMapping("/test")
+//    public Page<?> test(@RequestParam int size, @RequestParam int page){
+//        return userService.getAllUserViewPageable(size,page);
+//    }
+
 
 
 

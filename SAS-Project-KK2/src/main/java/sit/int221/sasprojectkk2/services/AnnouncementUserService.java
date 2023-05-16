@@ -6,11 +6,10 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import sit.int221.sasprojectkk2.dtos.ClosePageDetailDTO;
-import sit.int221.sasprojectkk2.dtos.SortByCategoryDTO;
-import sit.int221.sasprojectkk2.dtos.UserViewDTO;
+import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
+import sit.int221.sasprojectkk2.utils.ListMapper;
 
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -28,9 +27,18 @@ public class AnnouncementUserService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private ListMapper listMapper;
+
 
     public List<Announcement> getAllUserView() {
         List<Announcement> announcementList = announcementRepository.findAll();
+        return announcementList;
+    }
+    public Page<?> getAllUserViewPageable(int size, int page) {
+        Pageable pageable = PageRequest.of(page,size);
+        Page<Announcement> announcementList = announcementRepository.findAll(pageable);
+        System.out.println("ALL: "+announcementList.getTotalElements());
         return announcementList;
     }
 
@@ -99,11 +107,11 @@ public class AnnouncementUserService {
         return userViewDTOS;
     }
 
-    public Page<ClosePageDetailDTO> closeMethod(int page, int size){
+    public Page<AnnouncementDTO> closeMethod(int page, int size){
         List<Announcement> findALl = announcementRepository.findAll();
         Pageable pageable = PageRequest.of(page, size);
         ZonedDateTime currentTime = ZonedDateTime.now();
-        List<ClosePageDetailDTO> filteredClose = new java.util.ArrayList<>(findALl.stream()
+        List<AnnouncementDTO> filteredClose = new java.util.ArrayList<>(findALl.stream()
                 .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
                 .filter(announcement -> {
                     ZonedDateTime closeDate = announcement.getCloseDate();
@@ -112,7 +120,7 @@ public class AnnouncementUserService {
                     }
                     return false;
                 }).map(c -> {
-                    ClosePageDetailDTO activeDTO = modelMapper.map(c, ClosePageDetailDTO.class);
+                    AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
                     activeDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
                     return activeDTO;
                 }).toList());
@@ -123,16 +131,16 @@ public class AnnouncementUserService {
         if (start >= total) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
-        List<ClosePageDetailDTO> pageContent = filteredClose.subList(start, end);
-        Page<ClosePageDetailDTO> pageableClose = new PageImpl<>(pageContent, pageable, total);
+        List<AnnouncementDTO> pageContent = filteredClose.subList(start, end);
+        Page<AnnouncementDTO> pageableClose = new PageImpl<>(pageContent, pageable, total);
         return pageableClose;
     }
 
-    public Page<SortByCategoryDTO> activeMethod(int page, int size) {
+    public Page<AnnouncementDTO> activeMethod(int page, int size) {
         List<Announcement> findALl = announcementRepository.findAll();
         Pageable pageable = PageRequest.of(page, size);
         ZonedDateTime currentTime = ZonedDateTime.now();
-        List<SortByCategoryDTO> filteredActive = new java.util.ArrayList<>(findALl.stream()
+        List<AnnouncementDTO> filteredActive = new java.util.ArrayList<>(findALl.stream()
                 .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
                 .filter(announcement -> {
                     ZonedDateTime publishDate = announcement.getPublishDate();
@@ -155,7 +163,7 @@ public class AnnouncementUserService {
 
                     return false;
                 }).map(c -> {
-                    SortByCategoryDTO activeDTO = modelMapper.map(c, SortByCategoryDTO.class);
+                    AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
                     activeDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
                     return activeDTO;
                 }).toList());
@@ -166,38 +174,33 @@ public class AnnouncementUserService {
         if (start >= total) {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
-        List<SortByCategoryDTO> pageContent = filteredActive.subList(start, end);
-        Page<SortByCategoryDTO> pageable1 = new PageImpl<>(pageContent, pageable, total);
+        List<AnnouncementDTO> pageContent = filteredActive.subList(start, end);
+        Page<AnnouncementDTO> pageable1 = new PageImpl<>(pageContent, pageable, total);
         return pageable1;
     }
 
 
 
-    public List<?> userViewPage(String mode, int size, int page) {
-        if (Objects.equals(mode, "active")) {
-            Page<SortByCategoryDTO> pageAnnouncement = activeMethod(page, size);
-//            if (pageAnnouncement.getTotalElements() >= 5) {
-                return Collections.singletonList(pageAnnouncement);
-//            } else {
-//                return pageAnnouncement.getContent();
-//            }
+    public Page<?> userViewPage(String mode, int size, Integer category, int page) {
+         if (Objects.equals(mode, "active")) {
+//            System.out.println("Input Category Number: " + category);
+            if(category == null){
+                Page<AnnouncementDTO> pageAnnouncement = activeMethod(page, size);
+                return (pageAnnouncement);
+            }else{
+                return (sortByCategories(category, size, page));
+            }
         }
         if(Objects.equals(mode,"close")){
-            Page<ClosePageDetailDTO> pageAnnouncementClose = closeMethod(page, size);
-//            if(pageAnnouncementClose.getTotalElements() >= 5){
-                return Collections.singletonList(pageAnnouncementClose);
-//            }else{
-//                return pageAnnouncementClose.getContent();
+            if(category == null){
+                Page<AnnouncementDTO> pageAnnouncementClose = closeMethod(page, size);
+                return (pageAnnouncementClose);
+            }else{
+                return (sortByCategories(category, size, page));
             }
-        return null;
+        }
+        return (getAllUserViewPageable(page, size));
     }
-        // No matched cases of mode --> Return admin mode
-//        else{
-//            return getAnnouncementNoPageable();
-
-
-
-
 
     public List<UserViewDTO> getAnnouncementNoPageable() {
         List<Announcement> announcementList = announcementRepository.findAll();
@@ -213,16 +216,18 @@ public class AnnouncementUserService {
     }
 
     public Page<?> sortByCategories(Integer category, int size, int page){
-        Pageable pageable = PageRequest.of(size,page,Sort.by("id").descending());
-        Page<Announcement> sortByCategoryDTOS = announcementRepository.findAnnouncementByCategoryId(category,pageable);
-        sortByCategoryDTOS.stream().map(announcement -> {
-            SortByCategoryDTO sortByCategoryDTO = modelMapper.map(announcement, SortByCategoryDTO.class);
+        Pageable pageable = PageRequest.of(page, size,Sort.by("id").descending());
+        Page<Announcement> announcementList = announcementRepository.findAnnouncementByCategoryId(category, pageable);
+        System.out.println("Category " + category + " Amount = " + announcementList.getTotalElements());
+        List<AnnouncementDTO> sortByCategoryDTOList = announcementList.stream().map(announcement -> {
+            AnnouncementDTO sortByCategoryDTO = modelMapper.map(announcement, AnnouncementDTO.class);
             sortByCategoryDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName());
             return sortByCategoryDTO;
         }).collect(Collectors.toList());
-        Collections.reverse((List<?>) sortByCategoryDTOS);
-        return sortByCategoryDTOS;
+        return new PageImpl<>(sortByCategoryDTOList, pageable, announcementList.getTotalElements());
+
     }
+
 }
 
 
