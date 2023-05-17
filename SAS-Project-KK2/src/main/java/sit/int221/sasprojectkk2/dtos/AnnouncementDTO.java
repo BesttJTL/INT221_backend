@@ -14,7 +14,9 @@ import java.util.Date;
 public class AnnouncementDTO {
     private Integer Id;
     private String announcementTitle;
+    @ValidPublishDate
     private ZonedDateTime publishDate;
+    @ValidCloseDate
     private ZonedDateTime closeDate;
     private Character announcementDisplay;
     private String announcementCategory;

@@ -143,11 +143,12 @@ public class AnnouncementUserService {
     }
 
 
-    public Page<AnnouncementDTO> activeMethod(int page, int size) {
+    public Page<AnnouncementDTO> activeMethod(int page, int size, Integer category) {
         List<Announcement> findALl = announcementRepository.findAll();
         Pageable pageable = PageRequest.of(page, size);
         ZonedDateTime currentTime = ZonedDateTime.now();
         List<AnnouncementDTO> filteredActive = new java.util.ArrayList<>(findALl.stream()
+                .filter(announcement -> category == null || Objects.equals(announcement.getCategories_categoryId().getCategoryId(),category))
                 .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
                 .filter(announcement -> {
                     ZonedDateTime publishDate = announcement.getPublishDate();
@@ -167,13 +168,14 @@ public class AnnouncementUserService {
                     if (publishDate == null && closeDate.isAfter(currentTime)) {
                         return true;
                     }
-
                     return false;
-                }).map(c -> {
+                })
+                .map(c -> {
                     AnnouncementDTO activeDTO = modelMapper.map(c, AnnouncementDTO.class);
                     activeDTO.setAnnouncementCategory(c.getCategories_categoryId().getCategoryName());
                     return activeDTO;
                 }).toList());
+        System.out.println("Active Size = "+filteredActive.size());
         Collections.reverse(filteredActive);
         int start = (int) pageable.getOffset();
         int end = Math.min(start + pageable.getPageSize(), filteredActive.size());
@@ -192,7 +194,7 @@ public class AnnouncementUserService {
          if (Objects.equals(mode, "active")) {
             System.out.println("Input Category Number: " + category);
             if(category == null){
-                Page<AnnouncementDTO> pageAnnouncement = activeMethod(page, size);
+                Page<AnnouncementDTO> pageAnnouncement = activeMethod(page, size,category);
                 return (pageAnnouncement);
             }else{
                 return sortByCategories(category, size, page,mode);
@@ -233,7 +235,9 @@ public class AnnouncementUserService {
         }).collect(Collectors.toList());
 
         if (Objects.equals(mode, "active")) {
-            activeMethod(page, size);
+            List<AnnouncementDTO> allActiveFiltered = activeMethod(page, size,category).getContent();
+            System.out.println(allActiveFiltered.size());
+            return new PageImpl<>(allActiveFiltered,pageable,announcementList.getTotalElements());
         }
         if (Objects.equals(mode, "close")) {
             List<AnnouncementDTO> allCloseFiltered = closeMethod(page, size,category).getContent();

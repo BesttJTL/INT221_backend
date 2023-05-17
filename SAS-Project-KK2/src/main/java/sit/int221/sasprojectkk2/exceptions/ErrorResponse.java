@@ -1,35 +1,32 @@
 package sit.int221.sasprojectkk2.exceptions;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
+import java.util.List;
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class ErrorResponse {
-    private String field;
-    private String errorMessage;
+    private List<DetailError> detail;
+    @Getter
+    @Setter
+    public static class DetailError {
+        private String field;
+        private String errorMessage;
+//        @Override
+//        public String toString() {
+//            return "DetailError{" +
+//                    "field='" + field + '\'' +
+//                    ", errorMessage='" + errorMessage + '\'' +
+//                    '}';
+//        }
 
-    public ErrorResponse(String field, String errorMessage) {
-        this.field = field;
-        this.errorMessage = errorMessage;
     }
-
-    public String getField() {
-        return field;
-    }
-
-    public void setField(String field) {
-        this.field = field;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
+//    public void addDetailError(DetailError detailError) {
+//        this.detail.add(detailError);
+//    }
 }
-
-

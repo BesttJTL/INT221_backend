@@ -4,21 +4,22 @@ import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.ObjectError;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
-import sit.int221.sasprojectkk2.exceptions.InvalidDateTimeException;
+import sit.int221.sasprojectkk2.exceptions.ErrorResponse;
+import sit.int221.sasprojectkk2.exceptions.IllegalArgumentExceptionHandler;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
 import sit.int221.sasprojectkk2.services.AnnouncementUserService;
 import sit.int221.sasprojectkk2.utils.ListMapper;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -83,21 +84,34 @@ public class AnnouncementController {
     }
 
     @PostMapping()
-    public ResponsePostAnnouncementDTO createAnnouncement(@Valid @RequestBody PostAnnouncementDTO dto,BindingResult result) {
-        if(result.hasErrors()){
-            List<ObjectError> errors = result.getAllErrors();
-            List<String> errorMessages = new ArrayList<>();
-            for (ObjectError error : errors) {
-                errorMessages.add(error.getDefaultMessage());
+    public ResponseEntity<?> createAnnouncement(@Valid @RequestBody PostAnnouncementDTO dto,BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            ErrorResponse errorResponse = new ErrorResponse();
+            List<ErrorResponse.DetailError> detailErrors = new ArrayList<>();
+            List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+            for (FieldError fieldError : fieldErrors) {
+                ErrorResponse.DetailError detailError = new ErrorResponse.DetailError();
+                detailError.setField(fieldError.getField());
+                detailError.setErrorMessage(fieldError.getDefaultMessage());
+                detailErrors.add(detailError);
             }
-            throw new InvalidDateTimeException(errorMessages.toString());
+            errorResponse.setDetail(detailErrors);
+            return ResponseEntity.badRequest().body(errorResponse);
         }
-        Announcement announcement = service.createAnnouncement(dto);
-        ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(dto, ResponsePostAnnouncementDTO.class);
-        responsePostAnnouncementDTO.setId(announcement.getId());
-        responsePostAnnouncementDTO.setCategory(announcement.getCategories_categoryId().getCategoryName());
-        return responsePostAnnouncementDTO;
+        try {
+            Announcement announcement = service.createAnnouncement(dto);
+            ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(announcement, ResponsePostAnnouncementDTO.class);
+            responsePostAnnouncementDTO.setId(announcement.getId());
+            responsePostAnnouncementDTO.setCategory(announcement.getCategories_categoryId().getCategoryName());
+            return ResponseEntity.ok(responsePostAnnouncementDTO);
+        } catch (ResourceNotFoundException e) {
+            ErrorResponse.DetailError errorResponse = new ErrorResponse.DetailError();
+            errorResponse.setField("categoryId");
+            errorResponse.setErrorMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
     }
+
 
     @PutMapping("/{announcementId}")
     public ResponsePostAnnouncementDTO updateAnnouncement(@PathVariable Integer announcementId, @RequestBody PostAnnouncementDTO dto) {

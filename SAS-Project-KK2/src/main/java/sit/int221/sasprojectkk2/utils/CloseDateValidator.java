@@ -16,9 +16,7 @@ public class CloseDateValidator implements ConstraintValidator<ValidCloseDate,Zo
             return true;
         }
         ZonedDateTime current = ZonedDateTime.now();
-//        PostAnnouncementDTO dto = (PostAnnouncementDTO) context.
 
-//        return value.isAfter(current) || value.isAfter(publishDate);
         return false;
     }
 

@@ -4,24 +4,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sasprojectkk2.dtos.PostAnnouncementDTO;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.entities.Category;
-import sit.int221.sasprojectkk2.exceptions.InvalidDateTimeException;
+import sit.int221.sasprojectkk2.exceptions.IllegalArgumentExceptionHandler;
 import sit.int221.sasprojectkk2.exceptions.NotFoundException;
+import sit.int221.sasprojectkk2.exceptions.SQLIntegrityException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.repositories.CategoryRepository;
 
-import java.security.InvalidParameterException;
-import java.time.DateTimeException;
 import java.time.ZonedDateTime;
 import java.util.List;
+
 @Service
 @CrossOrigin
 @ControllerAdvice
+@Validated
 public class AnnouncementService {
     @Autowired
     private AnnouncementRepository repository;
@@ -35,25 +38,26 @@ public class AnnouncementService {
     }
 
     public Announcement createAnnouncement(PostAnnouncementDTO dto)  {
-        ZonedDateTime currentDateTime = ZonedDateTime.now();
-        if (dto.getAnnouncementTitle() == null) {
-            throw new ResourceNotFoundException("must not be null");
-        }
-        if (dto.getAnnouncementDescription() == null) {
-            throw new ResourceNotFoundException("must not be blank");
-        }
-        if(dto.getAnnouncementDescription().length() > 10000){
-            throw new RuntimeException("Description is Over-length !");
-        }
-        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
-            throw new InvalidDateTimeException("must be a date in the present or in the future");
-        }
-        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
-            throw new InvalidDateTimeException("must be later than publish date");
-        }
-        if(dto.getCloseDate().isBefore(currentDateTime)){
-            throw new InvalidDateTimeException("must be a future date");
-        }
+//        ZonedDateTime currentDateTime = ZonedDateTime.now();
+//        if (dto.getAnnouncementTitle() == null) {
+//            throw new IllegalArgumentExceptionHandler();
+//        }
+//        if (dto.getAnnouncementDescription() == null) {
+//            throw new ResourceNotFoundException("must not be blank");
+//        }
+//        if(dto.getAnnouncementDescription().length() > 10000){
+//            throw new RuntimeException("Description is Over-length !");
+//        }
+
+//        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
+//            throw new InvalidDateTimeException("must be a date in the present or in the future");
+//        }
+//        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
+//            throw new InvalidDateTimeException("must be later than publish date");
+//        }
+//        if(dto.getCloseDate().isBefore(currentDateTime)){
+//            throw new InvalidDateTimeException("must be a future date");
+//        }
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("must not be null"));
         Announcement announcement = new Announcement();
@@ -61,7 +65,11 @@ public class AnnouncementService {
         announcement.setAnnouncementDescription(dto.getAnnouncementDescription());
         announcement.setPublishDate(dto.getPublishDate());
         announcement.setCloseDate(dto.getCloseDate());
-        announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
+        if (dto.getAnnouncementDisplay() == null) {
+            dto.setAnnouncementDisplay('N');
+        } else {
+            announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
+        }
         announcement.setCategories_categoryId(category);
         return repository.saveAndFlush(announcement);
     }
