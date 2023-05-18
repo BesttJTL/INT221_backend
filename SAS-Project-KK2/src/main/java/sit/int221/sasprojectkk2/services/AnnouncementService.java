@@ -7,18 +7,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sasprojectkk2.dtos.PostAnnouncementDTO;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.entities.Category;
-import sit.int221.sasprojectkk2.exceptions.IllegalArgumentExceptionHandler;
 import sit.int221.sasprojectkk2.exceptions.NotFoundException;
-import sit.int221.sasprojectkk2.exceptions.SQLIntegrityException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.repositories.CategoryRepository;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -38,17 +34,6 @@ public class AnnouncementService {
     }
 
     public Announcement createAnnouncement(PostAnnouncementDTO dto)  {
-//        ZonedDateTime currentDateTime = ZonedDateTime.now();
-//        if (dto.getAnnouncementTitle() == null) {
-//            throw new IllegalArgumentExceptionHandler();
-//        }
-//        if (dto.getAnnouncementDescription() == null) {
-//            throw new ResourceNotFoundException("must not be blank");
-//        }
-//        if(dto.getAnnouncementDescription().length() > 10000){
-//            throw new RuntimeException("Description is Over-length !");
-//        }
-
 //        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
 //            throw new InvalidDateTimeException("must be a date in the present or in the future");
 //        }
@@ -59,7 +44,8 @@ public class AnnouncementService {
 //            throw new InvalidDateTimeException("must be a future date");
 //        }
         Category category = categoryRepository.findById(dto.getCategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("must not be null"));
+                .orElseThrow(() -> new ResourceNotFoundException("must not be null "));
+
         Announcement announcement = new Announcement();
         announcement.setAnnouncementTitle(dto.getAnnouncementTitle());
         announcement.setAnnouncementDescription(dto.getAnnouncementDescription());
@@ -67,9 +53,9 @@ public class AnnouncementService {
         announcement.setCloseDate(dto.getCloseDate());
         if (dto.getAnnouncementDisplay() == null) {
             dto.setAnnouncementDisplay('N');
-        } else {
             announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         }
+        announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         announcement.setCategories_categoryId(category);
         return repository.saveAndFlush(announcement);
     }

@@ -3,6 +3,7 @@ package sit.int221.sasprojectkk2.dtos;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.entities.Category;
 import lombok.Getter;
 import lombok.Setter;
@@ -12,7 +13,6 @@ import java.time.ZonedDateTime;
 @Getter
 @Setter
 public class ResponsePostAnnouncementDTO {
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     private String announcementTitle;
     private String announcementDescription;
@@ -20,12 +20,13 @@ public class ResponsePostAnnouncementDTO {
     private ZonedDateTime closeDate;
     private Character announcementDisplay;
     private String announcementCategory;
-    private Integer categoryId;
+    private Integer category;
 
-
-
-    public void setCategory(String categoryName) {
+    public void setAnnouncementCategory(String categoryName) {
         this.announcementCategory = categoryName;
     }
-
+    public void setCategoryId(Integer categoryId) {
+        this.category = categoryId;
+    }
 }
+

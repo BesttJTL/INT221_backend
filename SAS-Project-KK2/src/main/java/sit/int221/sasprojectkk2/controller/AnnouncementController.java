@@ -2,6 +2,7 @@ package sit.int221.sasprojectkk2.controller;
 
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
+import org.modelmapper.TypeMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.exceptions.ErrorResponse;
-import sit.int221.sasprojectkk2.exceptions.IllegalArgumentExceptionHandler;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
 import sit.int221.sasprojectkk2.services.AnnouncementUserService;
@@ -84,8 +84,9 @@ public class AnnouncementController {
     }
 
     @PostMapping()
-    public ResponseEntity<?> createAnnouncement(@Valid @RequestBody PostAnnouncementDTO dto,BindingResult bindingResult) {
+    public ResponseEntity<?> createAnnouncement(@Valid @RequestBody PostAnnouncementDTO dto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
+            // Handle validation errors
             ErrorResponse errorResponse = new ErrorResponse();
             List<ErrorResponse.DetailError> detailErrors = new ArrayList<>();
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -100,11 +101,12 @@ public class AnnouncementController {
         }
         try {
             Announcement announcement = service.createAnnouncement(dto);
-            ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(announcement, ResponsePostAnnouncementDTO.class);
-            responsePostAnnouncementDTO.setId(announcement.getId());
-            responsePostAnnouncementDTO.setCategory(announcement.getCategories_categoryId().getCategoryName());
+            ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(dto, ResponsePostAnnouncementDTO.class);
+            responsePostAnnouncementDTO.setId(announcement.getId()); // Announcement Id
+            responsePostAnnouncementDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName()); // Announcement Category Name
             return ResponseEntity.ok(responsePostAnnouncementDTO);
         } catch (ResourceNotFoundException e) {
+            // Handle resource not found error
             ErrorResponse.DetailError errorResponse = new ErrorResponse.DetailError();
             errorResponse.setField("categoryId");
             errorResponse.setErrorMessage(e.getMessage());
@@ -113,12 +115,13 @@ public class AnnouncementController {
     }
 
 
+
     @PutMapping("/{announcementId}")
     public ResponsePostAnnouncementDTO updateAnnouncement(@PathVariable Integer announcementId, @RequestBody PostAnnouncementDTO dto) {
         Announcement announcement = service.updateAnnouncement(announcementId, dto);
         String categoryName = announcement.getCategories_categoryId().getCategoryName();
         ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(dto, ResponsePostAnnouncementDTO.class);
-        responsePostAnnouncementDTO.setCategory(categoryName);
+        responsePostAnnouncementDTO.setAnnouncementCategory(categoryName);
         return responsePostAnnouncementDTO;
     }
 
