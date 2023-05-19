@@ -3,10 +3,8 @@ package sit.int221.sasprojectkk2.exceptions;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import sit.int221.sasprojectkk2.dtos.PostAnnouncementDTO;
 import sit.int221.sasprojectkk2.repositories.CategoryRepository;
 
-import java.lang.reflect.Array;
 
 public class ValidCategoryValidator implements ConstraintValidator<ValidCategory, Integer> {
 

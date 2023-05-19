@@ -2,12 +2,10 @@ package sit.int221.sasprojectkk2.dtos;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.minidev.json.annotate.JsonIgnore;
-import sit.int221.sasprojectkk2.entities.Announcement;
-import sit.int221.sasprojectkk2.entities.Category;
+import sit.int221.sasprojectkk2.exceptions.ValidCloseDate;
+import sit.int221.sasprojectkk2.exceptions.ValidPublishDate;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
 
 @Getter
 @Setter

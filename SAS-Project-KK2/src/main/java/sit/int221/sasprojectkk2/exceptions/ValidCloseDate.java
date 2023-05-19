@@ -1,4 +1,4 @@
-package sit.int221.sasprojectkk2.dtos;
+package sit.int221.sasprojectkk2.exceptions;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -14,7 +14,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = CloseDateValidator.class)
 public @interface ValidCloseDate {
 
-    String message() default "Close date cannot be before publish date.";
+    String message() default "";
 
     Class<?>[] groups() default {};
 

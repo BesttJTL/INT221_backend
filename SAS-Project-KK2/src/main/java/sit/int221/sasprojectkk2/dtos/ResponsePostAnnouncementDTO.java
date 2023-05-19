@@ -7,6 +7,8 @@ import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.entities.Category;
 import lombok.Getter;
 import lombok.Setter;
+import sit.int221.sasprojectkk2.exceptions.ValidCloseDate;
+import sit.int221.sasprojectkk2.exceptions.ValidPublishDate;
 
 import java.time.ZonedDateTime;
 
@@ -16,7 +18,9 @@ public class ResponsePostAnnouncementDTO {
     private Integer id;
     private String announcementTitle;
     private String announcementDescription;
+    @ValidPublishDate
     private ZonedDateTime publishDate;
+    @ValidCloseDate
     private ZonedDateTime closeDate;
     private Character announcementDisplay;
     private String announcementCategory;

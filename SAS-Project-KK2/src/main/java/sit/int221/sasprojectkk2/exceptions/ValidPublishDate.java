@@ -1,4 +1,4 @@
-package sit.int221.sasprojectkk2.dtos;
+package sit.int221.sasprojectkk2.exceptions;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

@@ -3,7 +3,10 @@ package sit.int221.sasprojectkk2.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -11,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import sit.int221.sasprojectkk2.dtos.PostAnnouncementDTO;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.entities.Category;
+import sit.int221.sasprojectkk2.exceptions.InvalidDateTimeException;
 import sit.int221.sasprojectkk2.exceptions.NotFoundException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.repositories.CategoryRepository;
@@ -51,9 +55,8 @@ public class AnnouncementService {
         announcement.setAnnouncementDescription(dto.getAnnouncementDescription());
         announcement.setPublishDate(dto.getPublishDate());
         announcement.setCloseDate(dto.getCloseDate());
-        if (dto.getAnnouncementDisplay() == null) {
+        if (dto.getAnnouncementDisplay() == null ) {
             dto.setAnnouncementDisplay('N');
-            announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         }
         announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         announcement.setCategories_categoryId(category);

@@ -2,23 +2,24 @@ package sit.int221.sasprojectkk2.utils;
 
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
-import jakarta.validation.ConstraintViolation;
-import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorContext;
-import sit.int221.sasprojectkk2.dtos.PostAnnouncementDTO;
-import sit.int221.sasprojectkk2.dtos.ValidCloseDate;
+import sit.int221.sasprojectkk2.exceptions.ValidCloseDate;
 
 import java.time.ZonedDateTime;
 
 public class CloseDateValidator implements ConstraintValidator<ValidCloseDate,ZonedDateTime> {
     @Override
-    public boolean isValid(ZonedDateTime value, ConstraintValidatorContext context) {
-        if (value == null) {
+    public boolean isValid(ZonedDateTime cDate, ConstraintValidatorContext context) {
+            ZonedDateTime currentTime = ZonedDateTime.now();
+            if (cDate != null && cDate.isBefore(currentTime)) {
+                context.disableDefaultConstraintViolation();
+                context.buildConstraintViolationWithTemplate("must be a future date")
+                        .addConstraintViolation();
+                return false;
+            }
+            if(cDate == null){
+                return true;
+            }
             return true;
-        }
-        ZonedDateTime current = ZonedDateTime.now();
 
-        return false;
     }
-
-
 }

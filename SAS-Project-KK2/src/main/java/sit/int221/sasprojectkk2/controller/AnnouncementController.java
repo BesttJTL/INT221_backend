@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.exceptions.ErrorResponse;
+import sit.int221.sasprojectkk2.exceptions.NotFoundException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
 import sit.int221.sasprojectkk2.services.AnnouncementUserService;
@@ -86,7 +87,6 @@ public class AnnouncementController {
     @PostMapping()
     public ResponseEntity<?> createAnnouncement(@Valid @RequestBody PostAnnouncementDTO dto, BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            // Handle validation errors
             ErrorResponse errorResponse = new ErrorResponse();
             List<ErrorResponse.DetailError> detailErrors = new ArrayList<>();
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -106,7 +106,6 @@ public class AnnouncementController {
             responsePostAnnouncementDTO.setAnnouncementCategory(announcement.getCategories_categoryId().getCategoryName()); // Announcement Category Name
             return ResponseEntity.ok(responsePostAnnouncementDTO);
         } catch (ResourceNotFoundException e) {
-            // Handle resource not found error
             ErrorResponse.DetailError errorResponse = new ErrorResponse.DetailError();
             errorResponse.setField("categoryId");
             errorResponse.setErrorMessage(e.getMessage());
@@ -115,9 +114,20 @@ public class AnnouncementController {
     }
 
 
-
     @PutMapping("/{announcementId}")
-    public ResponsePostAnnouncementDTO updateAnnouncement(@PathVariable Integer announcementId, @RequestBody PostAnnouncementDTO dto) {
+    public ResponsePostAnnouncementDTO updateAnnouncement(@PathVariable Integer announcementId, @RequestBody PostAnnouncementDTO dto, BindingResult bindingResult) {
+        if(bindingResult.hasErrors()){
+            ErrorResponse errorResponse = new ErrorResponse();
+            List<ErrorResponse.DetailError> detailErrors = new ArrayList<>();
+            List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+            for (FieldError fieldError : fieldErrors) {
+                ErrorResponse.DetailError detailError = new ErrorResponse.DetailError();
+                detailError.setField(fieldError.getField());
+                detailError.setErrorMessage(fieldError.getDefaultMessage());
+                detailErrors.add(detailError);
+            }
+            errorResponse.setDetail(detailErrors);
+        }
         Announcement announcement = service.updateAnnouncement(announcementId, dto);
         String categoryName = announcement.getCategories_categoryId().getCategoryName();
         ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(dto, ResponsePostAnnouncementDTO.class);
@@ -132,7 +142,6 @@ public class AnnouncementController {
     }
 
 
-    // URI: /page with pagination (PBI10)
     @GetMapping("/pages")
     public PageDto<AnnouncementDTO> getSortAnnouncement(@RequestParam(defaultValue = "active") String mode,
                                           @RequestParam(defaultValue = "5") Integer size,
