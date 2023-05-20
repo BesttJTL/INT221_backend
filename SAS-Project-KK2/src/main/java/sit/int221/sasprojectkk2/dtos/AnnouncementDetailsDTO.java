@@ -25,7 +25,7 @@ public class AnnouncementDetailsDTO {
     @JsonIgnore
     private Category categoryId;
 
-    private Character announcementDisplay;
+    private String announcementDisplay;
 
     public void setCategory(String categoryName) {
         this.announcementCategory = categoryName;

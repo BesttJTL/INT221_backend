@@ -22,7 +22,7 @@ public class Announcement {
     private String announcementDescription;
     private ZonedDateTime publishDate;
     private ZonedDateTime closeDate;
-    private Character announcementDisplay;
+    private String announcementDisplay;
     @ManyToOne
     @JoinColumn(name = "Categories_categoryId")
     private Category Categories_categoryId;

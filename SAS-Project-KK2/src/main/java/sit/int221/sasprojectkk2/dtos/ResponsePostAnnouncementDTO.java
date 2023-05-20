@@ -22,7 +22,7 @@ public class ResponsePostAnnouncementDTO {
     private ZonedDateTime publishDate;
     @ValidCloseDate
     private ZonedDateTime closeDate;
-    private Character announcementDisplay;
+    private String announcementDisplay;
     private String announcementCategory;
     private Integer category;
 

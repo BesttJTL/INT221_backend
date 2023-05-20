@@ -55,8 +55,11 @@ public class AnnouncementService {
         announcement.setAnnouncementDescription(dto.getAnnouncementDescription());
         announcement.setPublishDate(dto.getPublishDate());
         announcement.setCloseDate(dto.getCloseDate());
-//        if (dto.getAnnouncementDisplay() == null ) {
-//            dto.setAnnouncementDisplay('N');
+        if (dto.getAnnouncementDisplay() == null ) {
+            dto.setAnnouncementDisplay("N");
+        }
+//        if (dto.getAnnouncementDisplay().equals("")){
+//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ddd");
 //        }
         announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         announcement.setCategories_categoryId(category);

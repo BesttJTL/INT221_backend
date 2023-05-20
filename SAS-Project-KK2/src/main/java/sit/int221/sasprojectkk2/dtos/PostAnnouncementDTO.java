@@ -17,7 +17,7 @@ public class PostAnnouncementDTO {
     @ValidCloseDate
     private ZonedDateTime closeDate;
     @ValidDisplay
-    private Character announcementDisplay;
+    private String announcementDisplay;
     @ValidCategory
     private Integer categoryId;
 }

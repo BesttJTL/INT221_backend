@@ -45,7 +45,7 @@ public class AnnouncementUserService {
     public List<UserViewDTO> returnActiveAnnouncement() {
         List<Announcement> announcementList = announcementRepository.findAll();
         List<UserViewDTO> validDisplay = announcementList.stream()
-                .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                .filter(announcement -> "Y" == announcement.getAnnouncementDisplay())
                 .filter(announcement -> {
                     ZonedDateTime currentTime = ZonedDateTime.now();
                     ZonedDateTime publishDate = announcement.getPublishDate();
@@ -86,7 +86,7 @@ public class AnnouncementUserService {
     public List<UserViewDTO> returnClosedAnnouncement() {
         List<Announcement> announcementList = announcementRepository.findAll();
         List<UserViewDTO> validDisplay = announcementList.stream()
-                .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                .filter(announcement -> "Y" == announcement.getAnnouncementDisplay())
                 .filter(announcement -> {
                     ZonedDateTime currentTime = ZonedDateTime.now();
                     ZonedDateTime closeDate = announcement.getCloseDate();
@@ -112,7 +112,7 @@ public class AnnouncementUserService {
         ZonedDateTime currentTime = ZonedDateTime.now();
 
         List<AnnouncementDTO> filteredClose = findAll.stream()
-                .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                .filter(announcement ->  announcement.getAnnouncementDisplay() == "Y")
                 .filter(announcement -> {
                     ZonedDateTime closeDate = announcement.getCloseDate();
                     if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
@@ -149,7 +149,7 @@ public class AnnouncementUserService {
         ZonedDateTime currentTime = ZonedDateTime.now();
         List<AnnouncementDTO> filteredActive = new java.util.ArrayList<>(findALl.stream()
                 .filter(announcement -> category == null || Objects.equals(announcement.getCategories_categoryId().getCategoryId(),category))
-                .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                .filter(announcement -> announcement.getAnnouncementDisplay() == "Y")
                 .filter(announcement -> {
                     ZonedDateTime publishDate = announcement.getPublishDate();
                     ZonedDateTime closeDate = announcement.getCloseDate();
@@ -242,7 +242,7 @@ public class AnnouncementUserService {
         if (Objects.equals(mode, "close")) {
             List<AnnouncementDTO> allCloseFiltered = closeMethod(page, size,category).getContent();
             allCloseFiltered.stream()
-                    .filter(announcement -> 'Y' == announcement.getAnnouncementDisplay())
+                    .filter(announcement -> announcement.getAnnouncementDisplay() == "Y")
                     .filter(announcement -> {
                         ZonedDateTime closeDate = announcement.getCloseDate();
                         if (closeDate != null && (closeDate.isBefore(currentTime) || closeDate.isEqual(currentTime))) {
