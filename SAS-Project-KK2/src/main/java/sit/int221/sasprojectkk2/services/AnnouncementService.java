@@ -58,6 +58,9 @@ public class AnnouncementService {
         if (dto.getAnnouncementDisplay() == null ) {
             dto.setAnnouncementDisplay('N');
         }
+        if(!dto.getAnnouncementDisplay().equals('Y') && !dto.getAnnouncementDisplay().equals('N')){
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"must be either 'Y' or 'N");
+        }
         announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         announcement.setCategories_categoryId(category);
         return repository.saveAndFlush(announcement);
