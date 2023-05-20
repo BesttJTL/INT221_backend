@@ -25,12 +25,11 @@ public class ValidDisplayValidator implements ConstraintValidator<ValidDisplay, 
 //        }
 
         if (character == null) {
-            return true;
+            return false;
         }
 
-
-        if(!character.equals('N') && !character.equals('Y')) {
-            return false;
+        if(character.equals('N') || character.equals('Y')) {
+            return true;
         }
 
         // Requirement 3: If announcementDisplay is neither 'Y' nor 'N', return false
@@ -40,7 +39,7 @@ public class ValidDisplayValidator implements ConstraintValidator<ValidDisplay, 
 //        hibernateContext.addMessageParameter("display", String.valueOf(character))
 //                .buildConstraintViolationWithTemplate("must be either 'Y' or 'N'")
 //                .addConstraintViolation();
-        return true;
+        return false;
     }
 }
 
