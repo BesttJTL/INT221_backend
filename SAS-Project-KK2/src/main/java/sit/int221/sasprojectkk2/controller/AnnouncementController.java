@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import sit.int221.sasprojectkk2.dtos.*;
 import sit.int221.sasprojectkk2.entities.Announcement;
 import sit.int221.sasprojectkk2.exceptions.ErrorResponse;
-import sit.int221.sasprojectkk2.exceptions.NotFoundException;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
 import sit.int221.sasprojectkk2.services.AnnouncementUserService;
@@ -115,8 +114,8 @@ public class AnnouncementController {
 
 
     @PutMapping("/{announcementId}")
-    public ResponsePostAnnouncementDTO updateAnnouncement(@PathVariable Integer announcementId, @RequestBody PostAnnouncementDTO dto, BindingResult bindingResult) {
-        if(bindingResult.hasErrors()){
+    public ResponseEntity<?> updateAnnouncement(@PathVariable Integer announcementId, @Valid  @RequestBody PostAnnouncementDTO dto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
             ErrorResponse errorResponse = new ErrorResponse();
             List<ErrorResponse.DetailError> detailErrors = new ArrayList<>();
             List<FieldError> fieldErrors = bindingResult.getFieldErrors();
@@ -127,14 +126,22 @@ public class AnnouncementController {
                 detailErrors.add(detailError);
             }
             errorResponse.setDetail(detailErrors);
+            return ResponseEntity.badRequest().body(errorResponse);
         }
-        Announcement announcement = service.updateAnnouncement(announcementId, dto);
-        String categoryName = announcement.getCategories_categoryId().getCategoryName();
-        ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(dto, ResponsePostAnnouncementDTO.class);
-        responsePostAnnouncementDTO.setAnnouncementCategory(categoryName);
-        return responsePostAnnouncementDTO;
+        try{
+            Announcement announcement = service.updateAnnouncement(announcementId, dto);
+            String categoryName = announcement.getCategories_categoryId().getCategoryName();
+            ResponsePostAnnouncementDTO responsePostAnnouncementDTO = modelMapper.map(dto, ResponsePostAnnouncementDTO.class);
+            responsePostAnnouncementDTO.setAnnouncementCategory(categoryName);
+            return ResponseEntity.status(HttpStatus.OK).body(responsePostAnnouncementDTO);
+        }catch(RuntimeException ex){
+            ErrorResponse.DetailError errorResponse = new ErrorResponse.DetailError();
+            errorResponse.setField("categoryId");
+            errorResponse.setErrorMessage(ex.getMessage());
+            System.out.println(errorResponse.getErrorMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
     }
-
 
     @DeleteMapping("/{announcementId}")
     public void deleteEmployees(@PathVariable Integer announcementId){
@@ -143,7 +150,8 @@ public class AnnouncementController {
 
 
     @GetMapping("/pages")
-    public PageDto<AnnouncementDTO> getSortAnnouncement(@RequestParam(defaultValue = "active") String mode,
+    public PageDto<AnnouncementDTO> getSortAnnouncement(
+                                          @RequestParam(defaultValue = "active") String mode,
                                           @RequestParam(defaultValue = "5") Integer size,
                                           @RequestParam(required = false) Integer category,
                                           @RequestParam(defaultValue = "0") Integer page) {

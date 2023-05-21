@@ -38,15 +38,6 @@ public class AnnouncementService {
     }
 
     public Announcement createAnnouncement(PostAnnouncementDTO dto)  {
-//        if(dto.getPublishDate() !=null && dto.getPublishDate().isBefore(currentDateTime)) {
-//            throw new InvalidDateTimeException("must be a date in the present or in the future");
-//        }
-//        if(dto.getPublishDate() !=null && dto.getCloseDate().isBefore(dto.getPublishDate())) {
-//            throw new InvalidDateTimeException("must be later than publish date");
-//        }
-//        if(dto.getCloseDate().isBefore(currentDateTime)){
-//            throw new InvalidDateTimeException("must be a future date");
-//        }
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("must not be null "));
 
@@ -58,9 +49,6 @@ public class AnnouncementService {
         if (dto.getAnnouncementDisplay() == null ) {
             dto.setAnnouncementDisplay("N");
         }
-//        if (dto.getAnnouncementDisplay().equals("")){
-//            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"ddd");
-//        }
         announcement.setAnnouncementDisplay(dto.getAnnouncementDisplay());
         announcement.setCategories_categoryId(category);
         return repository.saveAndFlush(announcement);
