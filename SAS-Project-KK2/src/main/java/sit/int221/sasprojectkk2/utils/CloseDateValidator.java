@@ -7,6 +7,7 @@ import sit.int221.sasprojectkk2.exceptions.ValidCloseDate;
 import java.time.ZonedDateTime;
 
 public class CloseDateValidator implements ConstraintValidator<ValidCloseDate,ZonedDateTime> {
+
     @Override
     public boolean isValid(ZonedDateTime cDate, ConstraintValidatorContext context) {
             ZonedDateTime currentTime = ZonedDateTime.now();

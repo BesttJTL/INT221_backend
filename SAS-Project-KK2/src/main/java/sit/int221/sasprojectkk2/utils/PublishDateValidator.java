@@ -7,6 +7,13 @@ import sit.int221.sasprojectkk2.exceptions.ValidPublishDate;
 import java.time.ZonedDateTime;
 
 public class PublishDateValidator implements ConstraintValidator<ValidPublishDate, ZonedDateTime> {
+
+    private ZonedDateTime closeDate;
+
+    public void PublishDateValidator(ZonedDateTime closeDate) {
+        this.closeDate = closeDate;
+    }
+
     @Override
     public boolean isValid(ZonedDateTime pDate, ConstraintValidatorContext context) {
         ZonedDateTime currentTime = ZonedDateTime.now();
@@ -16,8 +23,12 @@ public class PublishDateValidator implements ConstraintValidator<ValidPublishDat
                     .addConstraintViolation();
             return false;
         }
-
-
+        if(pDate != null && closeDate != null && pDate.isEqual(closeDate)){
+            context.disableDefaultConstraintViolation();
+            context.buildConstraintViolationWithTemplate("must be later than publish date")
+                    .addConstraintViolation();
+            return false;
+        }
         return true;
     }
 }

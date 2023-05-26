@@ -1,5 +1,6 @@
 package sit.int221.sasprojectkk2.controller;
 
+import jakarta.validation.ConstraintValidatorContext;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
@@ -17,7 +18,9 @@ import sit.int221.sasprojectkk2.exceptions.ErrorResponse;
 import sit.int221.sasprojectkk2.repositories.AnnouncementRepository;
 import sit.int221.sasprojectkk2.services.AnnouncementService;
 import sit.int221.sasprojectkk2.services.AnnouncementUserService;
+import sit.int221.sasprojectkk2.utils.CloseDateValidator;
 import sit.int221.sasprojectkk2.utils.ListMapper;
+import sit.int221.sasprojectkk2.utils.PublishDateValidator;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -128,6 +131,7 @@ public class AnnouncementController {
             errorResponse.setDetail(detailErrors);
             return ResponseEntity.badRequest().body(errorResponse);
         }
+
         try{
             Announcement announcement = service.updateAnnouncement(announcementId, dto);
             String categoryName = announcement.getCategories_categoryId().getCategoryName();
@@ -149,8 +153,7 @@ public class AnnouncementController {
     }
 
 
-    @GetMapping("/pages")
-    public PageDto<AnnouncementDTO> getSortAnnouncement(
+    @GetMapping("/pages")  public PageDto<AnnouncementDTO> getSortAnnouncement(
                                           @RequestParam(defaultValue = "active") String mode,
                                           @RequestParam(defaultValue = "5") Integer size,
                                           @RequestParam(required = false) Integer category,

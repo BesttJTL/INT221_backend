@@ -17,16 +17,6 @@ public class ErrorResponse {
     public static class DetailError {
         private String field;
         private String errorMessage;
-//        @Override
-//        public String toString() {
-//            return "DetailError{" +
-//                    "field='" + field + '\'' +
-//                    ", errorMessage='" + errorMessage + '\'' +
-//                    '}';
-//        }
 
     }
-//    public void addDetailError(DetailError detailError) {
-//        this.detail.add(detailError);
-//    }
 }

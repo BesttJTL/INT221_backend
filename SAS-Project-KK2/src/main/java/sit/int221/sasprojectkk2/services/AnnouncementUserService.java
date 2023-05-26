@@ -45,7 +45,7 @@ public class AnnouncementUserService {
     public List<UserViewDTO> returnActiveAnnouncement() {
         List<Announcement> announcementList = announcementRepository.findAll();
         List<UserViewDTO> validDisplay = announcementList.stream()
-                .filter(announcement -> "Y" == announcement.getAnnouncementDisplay())
+                .filter(announcement ->  announcement.getAnnouncementDisplay().equals("Y"))
                 .filter(announcement -> {
                     ZonedDateTime currentTime = ZonedDateTime.now();
                     ZonedDateTime publishDate = announcement.getPublishDate();
@@ -86,7 +86,7 @@ public class AnnouncementUserService {
     public List<UserViewDTO> returnClosedAnnouncement() {
         List<Announcement> announcementList = announcementRepository.findAll();
         List<UserViewDTO> validDisplay = announcementList.stream()
-                .filter(announcement -> "Y" == announcement.getAnnouncementDisplay())
+                .filter(announcement -> announcement.getAnnouncementDisplay().equals("Y"))
                 .filter(announcement -> {
                     ZonedDateTime currentTime = ZonedDateTime.now();
                     ZonedDateTime closeDate = announcement.getCloseDate();
